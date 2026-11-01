@@ -8,6 +8,10 @@ Licensed under the [Apache License 2.0](LICENSE).
 
 ## Quick start
 
+**Run it online:** https://kelleymic.github.io/cprs4cc/ (GitHub Pages). It opens with the synthetic sample patient loaded. Imported files are processed in your browser and are not uploaded anywhere. On this public page, Claude extraction is available only through an organization endpoint; the "Claude in this viewer" option works when the viewer is opened inside claude.ai.
+
+**Run it locally:**
+
 Open `index.html` in a browser. It is self-contained apart from two libraries loaded from cdnjs (pdf.js 3.11.174 and JSZip 3.10.1). To load the bundled samples with **File › Load Sample Records**, serve the folder over HTTP so the page can read `samples/`:
 
 ```
