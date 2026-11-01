@@ -1,0 +1,17 @@
+{
+  "name": "cprs4cc",
+  "version": "0.5.0",
+  "private": true,
+  "description": "CPRS-style external record viewer: imports FHIR, C-CDA, HL7 v2 and PDF records, normalizes to FHIR R4, exports FHIR Bundles.",
+  "license": "Apache-2.0",
+  "main": "src/engine.js",
+  "scripts": {
+    "build": "python3 build.py",
+    "test": "cd tests && node test.js && node catcheck.js && node ingesttest.js && node pathtest.js"
+  },
+  "dependencies": {
+    "@xmldom/xmldom": "^0.8.10",
+    "jszip": "^3.10.1",
+    "pdfjs-dist": "^3.11.174"
+  }
+}

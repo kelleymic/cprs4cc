@@ -1,0 +1,3 @@
+const fs=require('fs'); const lines=fs.readFileSync('../src/catalog.txt','utf8').split('\n').filter(l=>l&&!l.startsWith('#'));
+const chk=c=>{const [n,d]=c.split('-'); const r=n.split('').reverse(); let odd='',even=''; r.forEach((x,i)=> i%2===0? odd=x+odd : even=x+even); const s=(even+String(Number(odd)*2)).split('').reduce((a,b)=>a+ +b,0); return String((10-s%10)%10)===d;};
+let bad=0, codes=new Set(), n=0; for(const l of lines){ const [c]=l.split('|'); n++; if(!chk(c)){console.log('CHECK DIGIT FAIL',c,l.split('|')[1]);bad++;} if(codes.has(c)) console.log('DUP',c); codes.add(c);} console.log(n,'codes,',bad,'bad check digits');

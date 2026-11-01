@@ -1,0 +1,225 @@
+# code|LOINC long common name|printed-name aliases (;-separated)|specimen S=serum/plasma B=blood U=urine Q=urine qualitative A=arterial V=venous
+## Basic and comprehensive metabolic panel
+2951-2|Sodium [Moles/volume] in Serum or Plasma|SODIUM;NA;NA+|S
+2823-3|Potassium [Moles/volume] in Serum or Plasma|POTASSIUM;K;K+|S
+2075-0|Chloride [Moles/volume] in Serum or Plasma|CHLORIDE;CL|S
+2028-9|Carbon dioxide, total [Moles/volume] in Serum or Plasma|CO2;CARBON DIOXIDE;TOTAL CO2;CO2 TOTAL;CARBON DIOXIDE TOTAL;BICARBONATE;HCO3;TCO2|S
+3094-0|Urea nitrogen [Mass/volume] in Serum or Plasma|BUN;UREA NITROGEN;BLOOD UREA NITROGEN;UREA N|S
+2160-0|Creatinine [Mass/volume] in Serum or Plasma|CREATININE;CREAT;CR|S
+2345-7|Glucose [Mass/volume] in Serum or Plasma|GLUCOSE;GLU;GLUCOSE RANDOM;RANDOM GLUCOSE|S
+1558-6|Fasting glucose [Mass/volume] in Serum or Plasma|FASTING GLUCOSE;GLUCOSE FASTING;FBS;FASTING BLOOD SUGAR|S
+17861-6|Calcium [Mass/volume] in Serum or Plasma|CALCIUM;CA;CALCIUM TOTAL;TOTAL CALCIUM|S
+33037-3|Anion gap in Serum or Plasma|ANION GAP;AGAP|S
+3097-3|Urea nitrogen/Creatinine [Mass Ratio] in Serum or Plasma|BUN CREATININE RATIO;BUN CREAT RATIO;BUN/CREATININE RATIO;BUN/CREAT RATIO|S
+98979-8|Glomerular filtration rate/1.73 sq M.predicted [Volume Rate/Area] in Serum, Plasma or Blood by Creatinine-based formula (CKD-EPI 2021)|EGFR;EGFR CKD EPI 2021;EGFR CKD EPI;ESTIMATED GFR;GFR ESTIMATED;EGFR CR;EGFRCR;GFR|S
+48642-3|Glomerular filtration rate/1.73 sq M.predicted among non-blacks [Volume Rate/Area] in Serum, Plasma or Blood by Creatinine-based formula (MDRD)|EGFR NON AFR AMERICAN;EGFR NON AFRICAN AMERICAN;EGFR NON AFR AMER;EGFR IF NON AFRICN AM|S
+48643-1|Glomerular filtration rate/1.73 sq M.predicted among blacks [Volume Rate/Area] in Serum, Plasma or Blood by Creatinine-based formula (MDRD)|EGFR AFRICAN AMERICAN;EGFR AFR AMERICAN;EGFR AFR AMER;EGFR IF AFRICN AM|S
+2777-1|Phosphate [Mass/volume] in Serum or Plasma|PHOSPHORUS;PHOSPHATE;PHOS;PO4;INORGANIC PHOSPHORUS|S
+19123-9|Magnesium [Mass/volume] in Serum or Plasma|MAGNESIUM;MG|S
+3084-1|Urate [Mass/volume] in Serum or Plasma|URIC ACID;URATE|S
+2692-2|Osmolality of Serum or Plasma|OSMOLALITY;OSMO;SERUM OSMOLALITY|S
+2524-7|Lactate [Moles/volume] in Serum or Plasma|LACTATE;LACTIC ACID|S
+16362-6|Ammonia [Moles/volume] in Plasma|AMMONIA;NH3|S
+## Liver and pancreas
+2885-2|Protein [Mass/volume] in Serum or Plasma|TOTAL PROTEIN;PROTEIN TOTAL;PROTEIN;TP|S
+1751-7|Albumin [Mass/volume] in Serum or Plasma|ALBUMIN;ALB|S
+10834-0|Globulin [Mass/volume] in Serum by calculation|GLOBULIN;GLOB;GLOBULIN TOTAL|S
+1759-0|Albumin/Globulin [Mass Ratio] in Serum or Plasma|A G RATIO;A/G RATIO;ALBUMIN GLOBULIN RATIO;ALB GLOB RATIO|S
+1975-2|Bilirubin.total [Mass/volume] in Serum or Plasma|BILIRUBIN TOTAL;TOTAL BILIRUBIN;BILIRUBIN;T BILI;TBILI;BILI TOTAL|S
+1968-7|Bilirubin.direct [Mass/volume] in Serum or Plasma|BILIRUBIN DIRECT;DIRECT BILIRUBIN;D BILI;DBILI;CONJUGATED BILIRUBIN|S
+1971-1|Bilirubin.indirect [Mass/volume] in Serum or Plasma|BILIRUBIN INDIRECT;INDIRECT BILIRUBIN|S
+6768-6|Alkaline phosphatase [Enzymatic activity/volume] in Serum or Plasma|ALKALINE PHOSPHATASE;ALK PHOS;ALKP;ALP;ALK PHOSPHATASE|S
+1742-6|Alanine aminotransferase [Enzymatic activity/volume] in Serum or Plasma|ALT;SGPT;ALT SGPT;ALANINE AMINOTRANSFERASE|S
+1920-8|Aspartate aminotransferase [Enzymatic activity/volume] in Serum or Plasma|AST;SGOT;AST SGOT;ASPARTATE AMINOTRANSFERASE|S
+2324-2|Gamma glutamyl transferase [Enzymatic activity/volume] in Serum or Plasma|GGT;GGTP;GAMMA GT;GAMMA GLUTAMYL TRANSFERASE|S
+2532-0|Lactate dehydrogenase [Enzymatic activity/volume] in Serum or Plasma|LDH;LD;LACTATE DEHYDROGENASE;LACTIC DEHYDROGENASE;LDH TOTAL|S
+3040-3|Lipase [Enzymatic activity/volume] in Serum or Plasma|LIPASE|S
+1798-8|Amylase [Enzymatic activity/volume] in Serum or Plasma|AMYLASE|S
+## Cardiac
+2157-6|Creatine kinase [Enzymatic activity/volume] in Serum or Plasma|CK;CPK;CREATINE KINASE;CK TOTAL;TOTAL CK|S
+13969-1|Creatine kinase.MB [Mass/volume] in Serum or Plasma|CK MB;CKMB;CK MB MASS|S
+10839-9|Troponin I.cardiac [Mass/volume] in Serum or Plasma|TROPONIN I;TNI;TROP I;CTNI|S
+89579-7|Troponin I.cardiac [Mass/volume] in Serum or Plasma by High sensitivity method|HS TROPONIN I;TROPONIN I HS;TROPONIN I HIGH SENSITIVITY;HIGH SENSITIVITY TROPONIN I;HSTNI|S
+6598-7|Troponin T.cardiac [Mass/volume] in Serum or Plasma|TROPONIN T;TNT;CTNT|S
+67151-1|Troponin T.cardiac [Mass/volume] in Serum or Plasma by High sensitivity method|HS TROPONIN T;TROPONIN T HS;TROPONIN T HIGH SENSITIVITY;HSTNT|S
+30934-4|Natriuretic peptide B [Mass/volume] in Serum or Plasma|BNP;B NATRIURETIC PEPTIDE;B TYPE NATRIURETIC PEPTIDE;BRAIN NATRIURETIC PEPTIDE|S
+33762-6|Natriuretic peptide.B prohormone N-Terminal [Mass/volume] in Serum or Plasma|NT PROBNP;NTPROBNP;NT PRO BNP;PRO BNP;N TERMINAL PRO BNP|S
+## Lipids
+2093-3|Cholesterol [Mass/volume] in Serum or Plasma|CHOLESTEROL;TOTAL CHOLESTEROL;CHOLESTEROL TOTAL;CHOL|S
+2571-8|Triglyceride [Mass/volume] in Serum or Plasma|TRIGLYCERIDES;TRIGLYCERIDE;TRIG;TRIGS;TG|S
+2085-9|Cholesterol in HDL [Mass/volume] in Serum or Plasma|HDL;HDL CHOLESTEROL;HDL C;CHOLESTEROL HDL;HDL CHOL|S
+13457-7|Cholesterol in LDL [Mass/volume] in Serum or Plasma by calculation|LDL;LDL CHOLESTEROL;LDL CALC;LDL CALCULATED;LDL CHOLESTEROL CALC;LDL CHOLESTEROL CALCULATED;LDL C;CHOLESTEROL LDL;LDL CHOL CALC|S
+18262-6|Cholesterol in LDL [Mass/volume] in Serum or Plasma by Direct assay|LDL DIRECT;DIRECT LDL;LDL CHOLESTEROL DIRECT|S
+43396-1|Cholesterol non HDL [Mass/volume] in Serum or Plasma|NON HDL CHOLESTEROL;NON HDL;NON HDL C;CHOLESTEROL NON HDL|S
+13458-5|Cholesterol in VLDL [Mass/volume] in Serum or Plasma by calculation|VLDL;VLDL CHOLESTEROL;VLDL CALC;VLDL CHOLESTEROL CAL|S
+9830-1|Cholesterol.total/Cholesterol in HDL [Mass Ratio] in Serum or Plasma|CHOL HDL RATIO;CHOLESTEROL HDL RATIO;TOTAL CHOLESTEROL HDL RATIO;CHOL/HDL RATIO;TC/HDL RATIO|S
+10835-7|Lipoprotein a [Mass/volume] in Serum or Plasma|LIPOPROTEIN A;LP A;LPA;LIPOPROTEIN LITTLE A|S
+1884-6|Apolipoprotein B [Mass/volume] in Serum or Plasma|APOLIPOPROTEIN B;APO B;APOB|S
+## Diabetes
+4548-4|Hemoglobin A1c/Hemoglobin.total in Blood|HEMOGLOBIN A1C;HGB A1C;HB A1C;A1C;HBA1C;GLYCOHEMOGLOBIN;GLYCATED HEMOGLOBIN;GLYCOSYLATED HEMOGLOBIN|B
+20448-7|Insulin [Units/volume] in Serum or Plasma|INSULIN;INSULIN FASTING|S
+1986-9|C peptide [Mass/volume] in Serum or Plasma|C PEPTIDE|S
+15069-8|Fructosamine [Moles/volume] in Serum or Plasma|FRUCTOSAMINE|S
+## Iron, vitamins
+2498-4|Iron [Mass/volume] in Serum or Plasma|IRON;FE;IRON TOTAL;TOTAL IRON;SERUM IRON|S
+2500-7|Iron binding capacity [Mass/volume] in Serum or Plasma|TIBC;IRON BINDING CAPACITY;TOTAL IRON BINDING CAPACITY|S
+2502-3|Iron saturation [Mass Fraction] in Serum or Plasma|IRON SATURATION;TRANSFERRIN SATURATION;IRON SAT;PERCENT SATURATION;PCT SATURATION;SATURATION|S
+2276-4|Ferritin [Mass/volume] in Serum or Plasma|FERRITIN|S
+3034-6|Transferrin [Mass/volume] in Serum or Plasma|TRANSFERRIN|S
+2132-9|Cobalamin (Vitamin B12) [Mass/volume] in Serum or Plasma|VITAMIN B12;VIT B12;B12;COBALAMIN|S
+2284-8|Folate [Mass/volume] in Serum or Plasma|FOLATE;FOLIC ACID;SERUM FOLATE|S
+62292-8|25-Hydroxyvitamin D2+25-Hydroxyvitamin D3 [Mass/volume] in Serum or Plasma|VITAMIN D 25 HYDROXY;VITAMIN D 25 OH;25 HYDROXY VITAMIN D;25 OH VITAMIN D;VITAMIN D;VIT D 25 OH;VITAMIN D 25 HYDROXY TOTAL;25 OH D;VITAMIN D TOTAL|S
+13965-9|Homocysteine [Moles/volume] in Serum or Plasma|HOMOCYSTEINE|S
+## Thyroid, endocrine
+3016-3|Thyrotropin [Units/volume] in Serum or Plasma|TSH;THYROID STIMULATING HORMONE;THYROTROPIN;TSH 3RD GENERATION|S
+3024-7|Thyroxine (T4) free [Mass/volume] in Serum or Plasma|FREE T4;T4 FREE;FT4;THYROXINE FREE;FREE THYROXINE|S
+3026-2|Thyroxine (T4) [Mass/volume] in Serum or Plasma|T4;T4 TOTAL;TOTAL T4;THYROXINE;THYROXINE TOTAL|S
+3051-0|Triiodothyronine (T3) Free [Mass/volume] in Serum or Plasma|FREE T3;T3 FREE;FT3|S
+3053-6|Triiodothyronine (T3) [Mass/volume] in Serum or Plasma|T3;T3 TOTAL;TOTAL T3;TRIIODOTHYRONINE|S
+8099-4|Thyroperoxidase Ab [Units/volume] in Serum or Plasma|TPO AB;TPO ANTIBODIES;THYROID PEROXIDASE AB;THYROID PEROXIDASE ANTIBODIES;ANTI TPO|S
+3013-0|Thyroglobulin [Mass/volume] in Serum or Plasma|THYROGLOBULIN;THYROGLOBULIN TUMOR MARKER|S
+8098-6|Thyroglobulin Ab [Units/volume] in Serum or Plasma|THYROGLOBULIN AB;THYROGLOBULIN ANTIBODY;THYROGLOBULIN ANTIBODIES;ANTI THYROGLOBULIN|S
+2731-8|Parathyrin.intact [Mass/volume] in Serum or Plasma|PTH;PTH INTACT;INTACT PTH;PARATHYROID HORMONE;PARATHYROID HORMONE INTACT|S
+2143-6|Cortisol [Mass/volume] in Serum or Plasma|CORTISOL;CORTISOL AM;CORTISOL TOTAL|S
+2842-3|Prolactin [Mass/volume] in Serum or Plasma|PROLACTIN|S
+2986-8|Testosterone [Mass/volume] in Serum or Plasma|TESTOSTERONE;TESTOSTERONE TOTAL;TOTAL TESTOSTERONE|S
+2991-8|Testosterone Free [Mass/volume] in Serum or Plasma|FREE TESTOSTERONE;TESTOSTERONE FREE|S
+2243-4|Estradiol (E2) [Mass/volume] in Serum or Plasma|ESTRADIOL;E2|S
+15067-2|Follitropin [Units/volume] in Serum or Plasma|FSH;FOLLICLE STIMULATING HORMONE|S
+10501-5|Lutropin [Units/volume] in Serum or Plasma|LH;LUTEINIZING HORMONE|S
+2191-5|Dehydroepiandrosterone sulfate [Mass/volume] in Serum or Plasma|DHEA S;DHEAS;DHEA SULFATE|S
+## Inflammation
+1988-5|C reactive protein [Mass/volume] in Serum or Plasma|CRP;C REACTIVE PROTEIN|S
+30522-7|C reactive protein [Mass/volume] in Serum or Plasma by High sensitivity method|HS CRP;HSCRP;CRP HS;CRP HIGH SENSITIVITY;HIGH SENSITIVITY CRP;CARDIO CRP|S
+30341-2|Erythrocyte sedimentation rate|ESR;SED RATE;SEDIMENTATION RATE;WESTERGREN ESR;SED RATE WESTERGREN|B
+33959-8|Procalcitonin [Mass/volume] in Serum or Plasma|PROCALCITONIN;PCT|S
+## Coagulation
+5902-2|Prothrombin time (PT)|PT;PROTIME;PROTHROMBIN TIME|S
+6301-6|INR in Platelet poor plasma by Coagulation assay|INR|S
+14979-9|aPTT in Platelet poor plasma by Coagulation assay|PTT;APTT;PARTIAL THROMBOPLASTIN TIME;ACTIVATED PTT|S
+3255-7|Fibrinogen [Mass/volume] in Platelet poor plasma by Coagulation assay|FIBRINOGEN|S
+48065-7|Fibrin D-dimer FEU [Mass/volume] in Platelet poor plasma|D DIMER;DDIMER;D DIMER FEU;D DIMER QUANT|S
+## Complete blood count
+6690-2|Leukocytes [#/volume] in Blood by Automated count|WBC;WHITE BLOOD CELLS;WHITE BLOOD CELL COUNT;WBC COUNT;LEUKOCYTES;WHITE COUNT|B
+789-8|Erythrocytes [#/volume] in Blood by Automated count|RBC;RED BLOOD CELLS;RED BLOOD CELL COUNT;RBC COUNT;ERYTHROCYTES|B
+718-7|Hemoglobin [Mass/volume] in Blood|HGB;HEMOGLOBIN;HB|B
+4544-3|Hematocrit [Volume Fraction] of Blood by Automated count|HCT;HEMATOCRIT|B
+787-2|MCV [Entitic volume] by Automated count|MCV;MEAN CORPUSCULAR VOLUME|B
+785-6|MCH [Entitic mass] by Automated count|MCH;MEAN CORPUSCULAR HEMOGLOBIN|B
+786-4|MCHC [Mass/volume] by Automated count|MCHC;MEAN CORPUSCULAR HEMOGLOBIN CONCENTRATION|B
+788-0|Erythrocyte distribution width [Ratio] by Automated count|RDW;RDW CV|B
+21000-5|Erythrocyte distribution width [Entitic volume] by Automated count|RDW SD|B
+777-3|Platelets [#/volume] in Blood by Automated count|PLT;PLATELETS;PLATELET COUNT;PLATELET|B
+32623-1|Platelet mean volume [Entitic volume] in Blood by Automated count|MPV;MEAN PLATELET VOLUME|B
+770-8|Neutrophils/100 leukocytes in Blood by Automated count|NEUTROPHILS;NEUTROPHILS PCT;NEUT;NEUT PCT;PCT NEUTROPHILS;NEUTROPHIL PCT;SEGS;POLYS;SEGMENTED NEUTROPHILS|B
+736-9|Lymphocytes/100 leukocytes in Blood by Automated count|LYMPHOCYTES;LYMPHOCYTES PCT;LYMPHS;LYMPH PCT;PCT LYMPHOCYTES|B
+5905-5|Monocytes/100 leukocytes in Blood by Automated count|MONOCYTES;MONOCYTES PCT;MONOS;MONO PCT;PCT MONOCYTES|B
+713-8|Eosinophils/100 leukocytes in Blood by Automated count|EOSINOPHILS;EOSINOPHILS PCT;EOS;EOS PCT;PCT EOSINOPHILS|B
+706-2|Basophils/100 leukocytes in Blood by Automated count|BASOPHILS;BASOPHILS PCT;BASOS;BASO PCT;PCT BASOPHILS|B
+751-8|Neutrophils [#/volume] in Blood by Automated count|ANC;ABSOLUTE NEUTROPHILS;NEUTROPHILS ABSOLUTE;NEUTROPHILS ABS;ABS NEUTROPHILS;NEUT ABS;NEUTROPHIL ABS;ABSOLUTE NEUTROPHIL COUNT|B
+731-0|Lymphocytes [#/volume] in Blood by Automated count|ALC;ABSOLUTE LYMPHOCYTES;LYMPHOCYTES ABSOLUTE;LYMPHOCYTES ABS;ABS LYMPHOCYTES;LYMPH ABS;LYMPHS ABS|B
+742-7|Monocytes [#/volume] in Blood by Automated count|ABSOLUTE MONOCYTES;MONOCYTES ABSOLUTE;MONOCYTES ABS;ABS MONOCYTES;MONO ABS;MONOS ABS|B
+711-2|Eosinophils [#/volume] in Blood by Automated count|AEC;ABSOLUTE EOSINOPHILS;EOSINOPHILS ABSOLUTE;EOSINOPHILS ABS;ABS EOSINOPHILS;EOS ABS|B
+704-7|Basophils [#/volume] in Blood by Automated count|ABSOLUTE BASOPHILS;BASOPHILS ABSOLUTE;BASOPHILS ABS;ABS BASOPHILS;BASO ABS;BASOS ABS|B
+71695-1|Immature granulocytes/100 leukocytes in Blood by Automated count|IMMATURE GRANULOCYTES;IMMATURE GRANS;IMM GRANULOCYTES;IG PCT;IG|B
+58413-6|Nucleated erythrocytes/100 leukocytes [Ratio] in Blood by Automated count|NRBC;NUCLEATED RBC;NUCLEATED RED BLOOD CELLS;NRBC PCT|B
+764-1|Band neutrophils/100 leukocytes in Blood by Manual count|BANDS;BAND NEUTROPHILS;BAND PCT;BAND FORMS|B
+4679-7|Reticulocytes/100 erythrocytes in Blood|RETICULOCYTES;RETIC;RETIC COUNT;RETICULOCYTE COUNT;RETIC PCT;RETICULOCYTE PCT|B
+14196-0|Reticulocytes [#/volume] in Blood|ABSOLUTE RETIC;RETIC ABSOLUTE;RETICULOCYTES ABSOLUTE;RETIC ABS;ABS RETIC;ABSOLUTE RETICULOCYTE COUNT|B
+## Blood gases
+2744-1|pH of Arterial blood|PH;PH ARTERIAL;ARTERIAL PH;ABG PH|A
+2019-8|Carbon dioxide [Partial pressure] in Arterial blood|PCO2;PACO2;PCO2 ARTERIAL|A
+2703-7|Oxygen [Partial pressure] in Arterial blood|PO2;PAO2;PO2 ARTERIAL|A
+1960-4|Bicarbonate [Moles/volume] in Arterial blood|HCO3;BICARBONATE;HCO3 ARTERIAL|A
+1925-7|Base excess in Arterial blood by calculation|BASE EXCESS;BE;BASE EXCESS ARTERIAL|A
+2708-6|Oxygen saturation in Arterial blood|O2 SAT;SAO2;OXYGEN SATURATION;O2 SATURATION|A
+2746-6|pH of Venous blood|PH;PH VENOUS;VENOUS PH;VBG PH|V
+2021-4|Carbon dioxide [Partial pressure] in Venous blood|PCO2;PVCO2;PCO2 VENOUS|V
+## Urinalysis
+5811-5|Specific gravity of Urine by Test strip|SPECIFIC GRAVITY;SP GR;SPEC GRAV;SG;SPECIFIC GRAVITY UA|Q
+5803-2|pH of Urine by Test strip|PH;PH UA|Q
+20454-5|Protein [Presence] in Urine by Test strip|PROTEIN;PROTEIN UA;PROT|Q
+2888-6|Protein [Mass/volume] in Urine|PROTEIN;TOTAL PROTEIN;PROTEIN TOTAL|U
+25428-4|Glucose [Presence] in Urine by Test strip|GLUCOSE;GLUCOSE UA;GLU|Q
+5792-7|Glucose [Mass/volume] in Urine by Test strip|GLUCOSE;GLU|U
+5797-6|Ketones [Mass/volume] in Urine by Test strip|KETONES;KETONE;KET|Q
+5794-3|Hemoglobin [Presence] in Urine by Test strip|BLOOD;OCCULT BLOOD;HEMOGLOBIN;BLOOD UA|Q
+5802-4|Nitrite [Presence] in Urine by Test strip|NITRITE;NITRITES|Q
+5799-2|Leukocyte esterase [Presence] in Urine by Test strip|LEUKOCYTE ESTERASE;LEUK ESTERASE;LEUKOCYTES;LE|Q
+5770-3|Bilirubin.total [Presence] in Urine by Test strip|BILIRUBIN;BILI|Q
+5818-0|Urobilinogen [Mass/volume] in Urine by Test strip|UROBILINOGEN|Q
+5778-6|Color of Urine|COLOR|Q
+5767-9|Appearance of Urine|APPEARANCE;CLARITY|Q
+5821-4|Leukocytes [#/area] in Urine sediment by Microscopy high power field|WBC;WBC HPF;WBC UA;WHITE BLOOD CELLS;WBCS|U
+13945-1|Erythrocytes [#/area] in Urine sediment by Microscopy high power field|RBC;RBC HPF;RBC UA;RED BLOOD CELLS;RBCS|U
+11277-1|Epithelial cells.squamous [#/area] in Urine sediment by Microscopy high power field|SQUAMOUS EPITHELIAL CELLS;EPITHELIAL CELLS;SQUAMOUS EPI;SQUAMOUS EPITHELIAL|U
+25145-4|Bacteria [Presence] in Urine sediment by Light microscopy|BACTERIA|Q
+## Urine chemistry
+2161-8|Creatinine [Mass/volume] in Urine|CREATININE;CREAT;CREATININE RANDOM|U
+14957-5|Microalbumin [Mass/volume] in Urine|MICROALBUMIN;ALBUMIN;MICROALB|U
+9318-7|Albumin/Creatinine [Mass Ratio] in Urine|MICROALBUMIN CREAT RATIO;MICROALBUMIN CREATININE RATIO;MICROALB CREAT RATIO;ALBUMIN CREATININE RATIO;ALB CREAT RATIO;UACR;ACR|U
+2890-2|Protein/Creatinine [Mass Ratio] in Urine|PROTEIN CREATININE RATIO;PROT CREAT RATIO;UPCR|U
+2955-3|Sodium [Moles/volume] in Urine|SODIUM;NA|U
+2828-2|Potassium [Moles/volume] in Urine|POTASSIUM;K|U
+2695-5|Osmolality of Urine|OSMOLALITY;OSMO|U
+2106-3|Choriogonadotropin (pregnancy test) [Presence] in Urine|HCG;HCG QUALITATIVE;PREGNANCY TEST;URINE PREGNANCY;UPT;HCG URINE|Q
+1695-6|5-Hydroxyindoleacetate [Mass/time] in 24 hour Urine|5 HIAA;5 HYDROXYINDOLEACETIC ACID;5 HIAA 24 HR|U
+## Serology and infectious disease
+5196-1|Hepatitis B virus surface Ag [Presence] in Serum by Immunoassay|HBSAG;HEPATITIS B SURFACE ANTIGEN;HEP B SURFACE AG;HEPATITIS B SURFACE AG|S
+16935-9|Hepatitis B virus surface Ab [Units/volume] in Serum|HBSAB;ANTI HBS;HEPATITIS B SURFACE ANTIBODY;HEP B SURFACE AB;HEPATITIS B SURFACE AB QUANT|S
+13952-7|Hepatitis B virus core Ab [Presence] in Serum or Plasma by Immunoassay|HBCAB;ANTI HBC;HEPATITIS B CORE AB;HEPATITIS B CORE ANTIBODY;HEP B CORE AB TOTAL;HEPATITIS B CORE AB TOTAL|S
+13955-0|Hepatitis C virus Ab [Presence] in Serum or Plasma by Immunoassay|HCV AB;ANTI HCV;HEPATITIS C ANTIBODY;HEPATITIS C AB;HEP C AB|S
+11011-4|Hepatitis C virus RNA [Units/volume] (viral load) in Serum or Plasma by NAA with probe detection|HCV RNA;HCV VIRAL LOAD;HCV RNA QUANT;HEPATITIS C RNA QUANT|S
+56888-1|HIV 1+2 Ab+HIV1 p24 Ag [Presence] in Serum or Plasma by Immunoassay|HIV 1 2 AG AB;HIV AG AB;HIV SCREEN;HIV 1 2 ANTIGEN ANTIBODY;HIV ANTIGEN ANTIBODY;HIV 1 2 AB AG 4TH GEN|S
+20447-9|HIV 1 RNA [#/volume] (viral load) in Serum or Plasma by NAA with probe detection|HIV VIRAL LOAD;HIV 1 RNA;HIV RNA QUANT;HIV 1 RNA QUANT|S
+20507-0|Reagin Ab [Presence] in Serum by RPR|RPR;RPR SCREEN;SYPHILIS RPR|S
+8061-4|Nuclear Ab [Presence] in Serum|ANA;ANA SCREEN;ANTINUCLEAR ANTIBODY;ANTINUCLEAR ANTIBODIES|S
+11572-5|Rheumatoid factor [Units/volume] in Serum or Plasma|RF;RHEUMATOID FACTOR;RA FACTOR|S
+32218-0|Cyclic citrullinated peptide Ab [Units/volume] in Serum by Immunoassay|CCP;CCP AB;ANTI CCP;CYCLIC CITRULLINATED PEPTIDE AB;CCP ANTIBODY IGG|S
+## Therapeutic drugs and toxicology
+4092-3|Vancomycin [Mass/volume] in Serum or Plasma --trough|VANCOMYCIN TROUGH;VANCO TROUGH|S
+20578-1|Vancomycin [Mass/volume] in Serum or Plasma|VANCOMYCIN;VANCO;VANCOMYCIN RANDOM|S
+10535-3|Digoxin [Mass/volume] in Serum or Plasma|DIGOXIN|S
+14334-7|Lithium [Moles/volume] in Serum or Plasma|LITHIUM|S
+3968-5|Phenytoin [Mass/volume] in Serum or Plasma|PHENYTOIN;DILANTIN;PHENYTOIN TOTAL|S
+4086-5|Valproate [Mass/volume] in Serum or Plasma|VALPROIC ACID;VALPROATE;DEPAKOTE|S
+3432-2|Carbamazepine [Mass/volume] in Serum or Plasma|CARBAMAZEPINE;TEGRETOL|S
+11253-2|Tacrolimus [Mass/volume] in Blood|TACROLIMUS;FK506;PROGRAF|B
+3298-7|Acetaminophen [Mass/volume] in Serum or Plasma|ACETAMINOPHEN;APAP;TYLENOL|S
+4024-6|Salicylates [Mass/volume] in Serum or Plasma|SALICYLATE;SALICYLATES;ASPIRIN LEVEL|S
+5643-2|Ethanol [Mass/volume] in Serum or Plasma|ETHANOL;ETOH;ALCOHOL;ALCOHOL ETHYL|S
+## Immunoglobulins and monoclonal proteins
+2458-8|IgA [Mass/volume] in Serum|IGA;IMMUNOGLOBULIN A|S
+2465-3|IgG [Mass/volume] in Serum|IGG;IMMUNOGLOBULIN G|S
+2472-9|IgM [Mass/volume] in Serum|IGM;IMMUNOGLOBULIN M|S
+19113-0|IgE [Units/volume] in Serum|IGE;IMMUNOGLOBULIN E;IGE TOTAL|S
+33358-3|Protein.monoclonal [Mass/volume] in Serum or Plasma by Electrophoresis|M SPIKE;M PROTEIN;MONOCLONAL PROTEIN;PARAPROTEIN;M SPIKE SPEP|S
+36916-5|Kappa light chains.free [Mass/volume] in Serum|FREE KAPPA;KAPPA FREE;KAPPA FREE LIGHT CHAINS;FREE KAPPA LIGHT CHAINS;KAPPA LIGHT CHAINS FREE;KAPPA FLC;KAPPA LC FREE|S
+33944-0|Lambda light chains.free [Mass/volume] in Serum or Plasma|FREE LAMBDA;LAMBDA FREE;LAMBDA FREE LIGHT CHAINS;FREE LAMBDA LIGHT CHAINS;LAMBDA LIGHT CHAINS FREE;LAMBDA FLC;LAMBDA LC FREE|S
+48378-4|Kappa light chains.free/Lambda light chains.free [Mass Ratio] in Serum|KAPPA LAMBDA RATIO;FREE KAPPA LAMBDA RATIO;KAPPA LAMBDA FREE RATIO;FLC RATIO;FREE LIGHT CHAIN RATIO|S
+## Serum tumor markers
+2857-1|Prostate specific Ag [Mass/volume] in Serum or Plasma|PSA;PSA TOTAL;TOTAL PSA;PROSTATE SPECIFIC ANTIGEN;PROSTATE SPECIFIC AG;PSA SCREEN;PSA DIAGNOSTIC;PSA SCREENING|S
+35741-8|Prostate specific Ag [Mass/volume] in Serum or Plasma by Detection limit <= 0.01 ng/mL|PSA ULTRASENSITIVE;ULTRASENSITIVE PSA;PSA ULTRA SENSITIVE;HYPERSENSITIVE PSA;PSA HYPERSENSITIVE|S
+10886-0|Prostate Specific Ag Free [Mass/volume] in Serum or Plasma|FREE PSA;PSA FREE|S
+12841-3|Prostate Specific Ag Free/Prostate specific Ag.total in Serum or Plasma|PSA FREE PCT;FREE PSA PCT;PCT FREE PSA;PSA PCT FREE;FREE TOTAL PSA RATIO;PSA FREE TOTAL RATIO|S
+2039-6|Carcinoembryonic Ag [Mass/volume] in Serum or Plasma|CEA;CARCINOEMBRYONIC ANTIGEN;CARCINOEMBRYONIC AG|S
+24108-3|Cancer Ag 19-9 [Units/volume] in Serum or Plasma|CA 19 9;CA19 9;CA 199;CA199;CANCER ANTIGEN 19 9;CARBOHYDRATE ANTIGEN 19 9;CANCER AG 19 9|S
+10334-1|Cancer Ag 125 [Units/volume] in Serum or Plasma|CA 125;CA125;CANCER ANTIGEN 125;CANCER AG 125|S
+6875-9|Cancer Ag 15-3 [Units/volume] in Serum or Plasma|CA 15 3;CA15 3;CA 153;CA153;CANCER ANTIGEN 15 3;CANCER AG 15 3|S
+17842-6|Cancer Ag 27-29 [Units/volume] in Serum or Plasma|CA 27 29;CA27 29;CA 2729;CA2729;CANCER ANTIGEN 27 29;CANCER AG 27 29|S
+17843-4|Cancer Ag 72-4 [Units/volume] in Serum or Plasma|CA 72 4;CA72 4;CA 724;CANCER ANTIGEN 72 4;CANCER AG 72 4|S
+1834-1|Alpha-1-Fetoprotein [Mass/volume] in Serum or Plasma|AFP;ALPHA FETOPROTEIN;ALPHA 1 FETOPROTEIN;AFP TUMOR MARKER;ALPHA FETOPROTEIN TUMOR MARKER;AFP SERUM|S
+42332-7|Alpha-1-Fetoprotein L3/Alpha-1-fetoprotein.total in Serum or Plasma|AFP L3;AFP L3 PCT;AFP L3 PERCENT;PCT AFP L3|S
+21198-7|Choriogonadotropin.beta subunit [Units/volume] in Serum or Plasma|BETA HCG;HCG BETA;BETA HCG QUANT;HCG BETA QUANT;HCG QUANTITATIVE;QUANTITATIVE HCG;HCG QUANT;BHCG;B HCG|S
+19080-1|Choriogonadotropin [Units/volume] in Serum or Plasma|HCG;HCG TOTAL;TOTAL HCG;HCG TUMOR MARKER;CHORIONIC GONADOTROPIN|S
+1952-1|Beta-2-Microglobulin [Mass/volume] in Serum or Plasma|BETA 2 MICROGLOBULIN;BETA2 MICROGLOBULIN;B2 MICROGLOBULIN;B2M;BETA 2 MICROGLOB|S
+9811-1|Chromogranin A [Mass/volume] in Serum or Plasma|CHROMOGRANIN A;CHROMOGRANIN;CGA|S
+1992-7|Calcitonin [Mass/volume] in Serum or Plasma|CALCITONIN|S
+15060-7|Enolase.neuron specific [Mass/volume] in Serum or Plasma|NSE;NEURON SPECIFIC ENOLASE|S
+55180-4|Human epididymis protein 4 [Moles/volume] in Serum or Plasma|HE4;HUMAN EPIDIDYMIS PROTEIN 4|S
+9679-2|Squamous cell carcinoma Ag [Mass/volume] in Serum or Plasma|SCC;SCC AG;SCCA;SQUAMOUS CELL CARCINOMA ANTIGEN;SQUAMOUS CELL CARCINOMA AG|S
+25390-6|Cytokeratin 19 [Mass/volume] in Serum or Plasma|CYFRA 21 1;CYFRA;CYTOKERATIN 19 FRAGMENT;CYTOKERATIN 19|S
+34319-4|Inhibin B [Mass/volume] in Serum or Plasma|INHIBIN B|S
+32996-1|HER2 [Mass/volume] in Serum|HER2;HER2 SERUM;HER 2 NEU;HER2 NEU;SERUM HER2;HER 2 NEU SERUM|S
+1693-1|5-Hydroxyindoleacetate [Mass/volume] in Serum or Plasma|5 HIAA;5 HYDROXYINDOLEACETIC ACID|S
+2333-3|Gastrin [Mass/volume] in Serum or Plasma|GASTRIN|S

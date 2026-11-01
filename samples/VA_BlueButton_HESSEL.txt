@@ -1,0 +1,75 @@
+------------------------------------------------------------
+               MY HEALTHEVET PERSONAL INFORMATION REPORT
+                       ** SAMPLE - FICTIONAL DATA **
+------------------------------------------------------------
+Name: HESSEL, LENARD F
+Date of Birth: 04/04/1993
+Report Date: 10/28/2026
+
+============================================================
+ VA ALLERGIES
+============================================================
+Allergy Name: PENICILLIN
+Date Entered: 03/11/2018
+Reaction: HIVES
+Allergy Type: DRUG
+Location: VA BERKSHIRE HCS
+Observed/Historical: HISTORICAL
+
+============================================================
+ VA PROBLEM LIST
+============================================================
+Problem: Type 2 diabetes mellitus without complications (ICD-10-CM E11.9)
+Status: ACTIVE
+Date Entered: 09/14/2026
+Provider: NGUYEN, ROSALIND M
+
+Problem: Essential (primary) hypertension (ICD-10-CM I10)
+Status: ACTIVE
+Date Entered: 09/14/2026
+Provider: NGUYEN, ROSALIND M
+
+============================================================
+ VA MEDICATION HISTORY
+============================================================
+Medication: METFORMIN HCL 500MG TAB
+Instructions: TAKE ONE TABLET BY MOUTH DAILY WITH EVENING MEAL
+Status: ACTIVE
+Last Filled On: 10/12/2026
+Rx #: 2810455
+
+Medication: LISINOPRIL 10MG TAB
+Instructions: TAKE ONE TABLET BY MOUTH DAILY
+Status: ACTIVE
+Last Filled On: 10/12/2026
+Rx #: 2810456
+
+============================================================
+ VA CHEMISTRY/HEMATOLOGY
+============================================================
+Lab Test: POTASSIUM
+Collected Date/Time: 09/28/2026 07:48
+Specimen: SERUM
+Result: 4.7
+Units: mmol/L
+Reference Range: 3.5-5.1
+Performing Lab: VA BERKSHIRE HCS LAB
+
+Lab Test: CREATININE
+Collected Date/Time: 09/28/2026 07:48
+Specimen: SERUM
+Result: 1.27
+Units: mg/dL
+Reference Range: 0.70-1.30
+Performing Lab: VA BERKSHIRE HCS LAB
+
+============================================================
+ VA APPOINTMENTS (FUTURE)
+============================================================
+Date/Time: 12/15/2026 08:30
+Clinic: PITTSFIELD PRIMARY CARE
+Status: SCHEDULED
+
+------------------------------------------------------------
+Note: My HealtheVet self-entered information is not shown.
+------------------------------------------------------------
