@@ -1,0 +1,53 @@
+name: Publish viewer to GitHub Pages
+
+# Lint and tests run in ci.yml, which branch protection requires on PRs into main;
+# this workflow only builds and deploys what reaches main.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; don't cancel a run that is already deploying.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Build index.html from src/
+        run: python3 build.py
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp index.html .nojekyll LICENSE _site/
+          cp -r samples _site/samples
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
