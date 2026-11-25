@@ -1,7 +1,7 @@
 process.env.TZ='America/New_York';
-globalThis.pdfjsLib=require('pdfjs-dist/legacy/build/pdf.js'); require('../src/engine.js'); const E=globalThis.CPRSEngine; E.deps.pdfjs=pdfjsLib;
+globalThis.pdfjsLib=require('pdfjs-dist/legacy/build/pdf.js'); require('../../src/engine.js'); const E=globalThis.CPRSEngine; E.deps.pdfjs=pdfjsLib;
 const fs=require('fs');
-(async()=>{ for (const f of process.argv.slice(2)) { const b=fs.readFileSync('../samples/'+f); const buf=b.buffer.slice(b.byteOffset,b.byteOffset+b.length);
+(async()=>{ for (const f of process.argv.slice(2)) { const b=fs.readFileSync('../../samples/'+f); const buf=b.buffer.slice(b.byteOffset,b.byteOffset+b.length);
   const prep=await E.prepareClaudeImport(f, buf, {mode:'deid'});
   const txt=prep.deid.pages.map(p=>'=== PAGE '+p.page+'\n'+p.lines.join('\n')).join('\n');
   console.log('##### '+f+'  identity:', prep.ident && prep.ident.name ? prep.ident.name.family+','+prep.ident.name.given.join(' ')+' '+prep.ident.dob : 'none', ' counts:', JSON.stringify(prep.deid.counts));

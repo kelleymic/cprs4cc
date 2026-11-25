@@ -64,17 +64,21 @@ docs/DESIGN.md      design notes
 ## Build and test
 
 ```
-npm install                 # pdfjs-dist, @xmldom/xmldom, jszip (test-only dependencies)
+npm ci                      # pdfjs-dist, @xmldom/xmldom, jszip (test-only dependencies)
 python3 build.py            # regenerate index.html after editing src/
-cd tests
-node test.js                # import every sample, print counts and patient identity
-node catcheck.js            # validate LOINC check digits in src/catalog.txt
-node maptest.js             # printed name + specimen -> LOINC
-node idtest.js              # patient name/DOB detection
-node rtest.js               # reference-range parsing
-node deidtest.js VA_ROI_Printout_HESSEL_2026.pdf   # de-identification leak check
-node ingesttest.js          # Claude extraction with a mock reply (verification, restoration)
-node pathtest.js            # fallback to rules, direct (no substitution) mode
+npm test                    # node --test "tests/unit/*.test.js"  (Node 20+, TZ is pinned by the tests)
 ```
 
-`tests/mockgw.py` is a stand-in for an organization's Claude endpoint (Messages API format) used for browser testing.
+The tests are assertions, not printouts:
+
+| File | What it checks |
+|---|---|
+| `fhir.test.js` | R4/STU3/DSTU2 shapes, entered-in-error, references, contained resources, bulk NDJSON / ZIP routing per patient, Binary attachments |
+| `cda.test.js` | C-CDA narrative references, interval and ratio values, statuses, negation, sig, allergy reactions, immunization lot |
+| `hl7v2.test.js` | OBX value types (SN, CWE, ED), alternate codes, deleted results, MLLP / batches, TXA documents |
+| `text.test.js` | printed / PDF labs (tables, one column per date, key/value blocks, qualitative results), vitals, HTML, encodings, identity, ZIP limits |
+| `terminology.test.js` | LOINC catalog check digits, name to LOINC mapping, range and flag parsing |
+| `samples.test.js` | golden counts for `samples/`, Synthea ground truth, FHIR vs C-CDA parity, export and re-import round trip |
+| `claude.test.js` | the optional Claude extraction path with a scripted model (verification, fallback, no identifiers sent) |
+
+`tests/legacy/` keeps the earlier exploratory scripts (they print, they do not assert). `tests/mockgw.py` is a stand-in for an organization's Claude endpoint (Messages API format) used for browser testing.

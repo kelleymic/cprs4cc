@@ -50,6 +50,8 @@
 ## Known limits
 - No OCR: scanned pages are flagged and never sent to Claude.
 - Printed times carry no time zone; the viewer's local zone is assumed.
-- FHIR STU3/DSTU2 are read as R4 with a warning.
+- FHIR STU3/DSTU2 are converted field by field to R4 (with a warning); FHIR XML is not read (the file is reported as unsupported). Resources marked entered-in-error and HL7 v2 results flagged deleted (OBX-11 D/W) are skipped with a warning.
+- ZIP archives are limited (file count, total size, nesting) so a zip bomb cannot exhaust memory.
+- Printed text: column positions are inferred from character offsets, so a table that a PDF extractor flattens badly can still be misread; every value keeps its source line so it can be checked.
 - Synthea sample labs carry no reference ranges.
 - LOINC mapping is name-based; tests outside the catalog keep only their printed name.

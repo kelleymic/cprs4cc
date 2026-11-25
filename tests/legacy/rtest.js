@@ -1,4 +1,4 @@
-require('../src/engine.js'); const E=globalThis.CPRSEngine;
+require('../../src/engine.js'); const E=globalThis.CPRSEngine;
 const t=`LABORATORY RESULTS
 Collected on 09/01/2026 08:00
 Test   Result   Ref Range

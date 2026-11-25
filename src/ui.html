@@ -173,6 +173,7 @@ function srcLabel(r) { const s = E.sources(r); if (!s.length) return ''; const a
 /* ---------------- app state ---------------- */
 const ui = { pt: null, tab: 'cover', labView: 'recent', labIdx: 0, rptView: 'imaging', probView: 'active', sel: {}, graphTest: null, sampleLoaded: false, docFilter: '' };
 const PT = () => E.state.patients.find(p => p.key === ui.pt);
+const filesOf = pt => E.state.files.filter(f => f.report && (f.report.patientKeys ? f.report.patientKeys.includes(pt) : f.report.patientKey === pt));   // a file with several patients is listed under each
 function items(kind) { return E.state.resources.filter(r => { const m = E.meta(r); return m.patientKey === ui.pt && (!kind || (Array.isArray(kind) ? kind.includes(m.kind) : m.kind === kind)); }).map(r => ({ r, d: E.describe(r) })); }
 function status(t) { $('#status').textContent = t; }
 
@@ -307,7 +308,7 @@ document.addEventListener('dblclick', e => { const li = e.target.closest('ul.lis
 document.addEventListener('keydown', e => { if (e.key === 'Enter') { const li = e.target.closest && e.target.closest('ul.list li[data-i]'); if (li) { const x = lists[li.parentElement.dataset.list][+li.dataset.i]; if (x && x.r) detail(x.r); } } });
 function latestByName(list) { const m = new Map(); for (const x of list.sort(byDateDesc)) { const k = x.d.name.toUpperCase(); if (!m.has(k)) m.set(k, x); } return [...m.values()]; }
 function renderCover() {
-  const probs = items('problem').filter(x => x.d.status !== 'resolved' && x.d.status !== 'inactive').sort(byDateDesc);
+  const probs = items('problem').filter(x => !/^(resolved|inactive|refuted|remission)$/.test(x.d.status)).sort(byDateDesc);
   const alls = items('allergy'); const meds = items('med').filter(x => !/completed|stopped|cancelled|entered-in-error/.test(x.d.status)).sort(byDateDesc);
   const imms = items('imm').sort(byDateDesc);
   const labs = items('lab').sort(byDateDesc); const labDates = []; for (const x of labs) { const k = (x.d.date || '').slice(0, 16); if (!labDates.length || labDates[labDates.length - 1].k !== k) labDates.push({ k, r: x.r, d: x.d, n: 1, ab: x.d.flag ? 1 : 0, names: [x.d.name] }); else { const g = labDates[labDates.length - 1]; g.n++; if (x.d.flag) g.ab++; g.names.push(x.d.name); } }
@@ -320,7 +321,7 @@ function renderCover() {
     panel('Postings', alls.length ? '<ul class="list"><li><span>Allergies</span><span>A</span></li></ul>' : '<div class="empty">No postings found.</div>') +
     panel('Active Medications', liList('cm', meds, x => x.d.name, x => x.d.status || ''), meds.length + '') +
     panel('Immunizations', liList('ci', imms, x => x.d.name, x => fmtDT(x.d.date, true)), imms.length + '') +
-    panel('Data Sources', (() => { const fs = E.state.files.filter(f => f.report && f.report.patientKey === ui.pt); return fs.length ? '<ul class="list">' + fs.map(f => '<li><span>' + esc(shortFile(f.name)) + '</span><span>' + esc(f.format) + '</span></li>').join('') + '</ul>' : '<div class="empty">—</div>'; })()) +
+    panel('Data Sources', (() => { const fs = filesOf(ui.pt); return fs.length ? '<ul class="list">' + fs.map(f => '<li><span>' + esc(shortFile(f.name)) + '</span><span>' + esc(f.format) + '</span></li>').join('') + '</ul>' : '<div class="empty">—</div>'; })()) +
     panel('Recent Lab Results', liList('cl', labDates.slice(0, 40), g => fmtDT(g.d.date) + '  ' + (g.n > 2 ? g.n + ' tests' : g.names.join(', ')), g => g.ab ? g.ab + ' abnormal' : ''), 'double-click to view') +
     panel('Vitals', vit.length ? '<ul class="list">' + vit.map(x => '<li><span>' + esc(vName(x)) + ' ' + graphBtn(x, x.d.value + ' ' + ud(x.d.unit)) + '</span><span>' + esc(fmtDT(x.d.date)) + '</span></li>').join('') + '</ul>' : '<div class="empty">No data found.</div>', 'click a value to graph') +
     panel('Appointments / Visits / Admissions', liList('ce', visits, x => fmtDT(x.d.date) + '  ' + x.d.name, x => x.d.status || ''), visits.length + '') +
@@ -534,7 +535,7 @@ function renderReports() {
   else if (v === 'visits') right = simple('visits', items('enc'), [{ h: 'Visit type', f: 'name', wrap: true }, { h: 'Location', f: 'location' }, { h: 'Reason', f: 'reason', wrap: true }, { h: 'Status', f: 'status' }]);
   else if (v === 'appts') right = simple('appts', items('appt'), [{ h: 'Clinic / description', f: 'name', wrap: true }, { h: 'Status', f: 'status' }]);
   else if (v === 'surveys') right = simple('surv', items(['survey', 'social', 'obs-other']), [{ h: 'Item', f: 'name', wrap: true }, { h: 'Value', f: 'value', wrap: true }, { h: 'Units', f: 'unit' }, { h: 'Type', f: 'kind' }]);
-  else if (v === 'files') right = '<div class="box sunken">' + filesTable(E.state.files.filter(f => f.report && f.report.patientKey === ui.pt)) + '</div>';
+  else if (v === 'files') right = '<div class="box sunken">' + filesTable(filesOf(ui.pt)) + '</div>';
   return '<div class="split">' + left + '<div class="right">' + right + '</div></div>';
   function simple(id, rows, cols) { rows.sort(byDateDesc); return '<div class="lbl">' + RPTS.find(r => r[0] === v)[1] + ' <small>(' + rows.length + ')</small></div><div class="box sunken">' + listView(id, [{ h: 'Date', fn: x => fmtDT(x.d.date), key: x => sortKey(x.d.date) }].concat(cols, [src]), rows) + '</div>'; }
 }

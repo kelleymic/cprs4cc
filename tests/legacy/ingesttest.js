@@ -1,5 +1,5 @@
 process.env.TZ='America/New_York';
-globalThis.pdfjsLib=require('pdfjs-dist/legacy/build/pdf.js'); require('../src/engine.js'); const E=globalThis.CPRSEngine; E.deps.pdfjs=pdfjsLib;
+globalThis.pdfjsLib=require('pdfjs-dist/legacy/build/pdf.js'); require('../../src/engine.js'); const E=globalThis.CPRSEngine; E.deps.pdfjs=pdfjsLib;
 const fs=require('fs');
 const L=(page,line,name,value,unit,ref,flag,extra)=>Object.assign({type:'lab',page,line,name,value,unit,refRange:ref,flag,specimen:'SERUM',performer:'RIVERSIDE REFERENCE LAB',date:'[D-2]',time:'07:40',comment:'',panel:''},extra||{});
 const MOCK={patient:{},items:[
@@ -11,7 +11,7 @@ const MOCK={patient:{},items:[
  {type:'allergy',page:3,line:14,endPage:4,endLine:3,substance:'LATEX',reaction:'CONTACT DERMATITIS',severity:'',date:'[D-6]'},
  {type:'problem',page:2,line:15,text:'Peripheral neuropathy',status:'active',date:''}, // not on that line: must be rejected
 ],unmapped:[{startPage:1,startLine:1,endPage:1,endLine:4,kind:'content',reason:'chart header with patient identification'},{startPage:1,startLine:6,endPage:1,endLine:6,kind:'layout',reason:'section heading'},{startPage:4,startLine:5,endPage:4,endLine:5,reason:'fax routing line'}]};
-(async()=>{ const f='Riverside_Multipage_GARCIA_2026.pdf'; const b=fs.readFileSync('../samples/'+f); const buf=b.buffer.slice(b.byteOffset,b.byteOffset+b.length);
+(async()=>{ const f='Riverside_Multipage_GARCIA_2026.pdf'; const b=fs.readFileSync('../../samples/'+f); const buf=b.buffer.slice(b.byteOffset,b.byteOffset+b.length);
  const prep=await E.prepareClaudeImport(f,buf,{mode:'deid'}); let prompts=[];
  const reps=await E.runClaudeImport(prep, async p=>{ prompts.push(p); return JSON.parse(JSON.stringify(MOCK)); }, {});
  const r=reps[0]; console.log('calls',prompts.length,'prompt chars',prompts[0].length,'| counts',JSON.stringify(r.counts),'| claude',JSON.stringify(r.claude)); console.log('identity',r.identity); console.log('warnings',r.warnings);
