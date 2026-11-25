@@ -57,7 +57,7 @@ src/catalog.txt     LOINC mapping table (code | long name | printed names | spec
 samples/            synthetic and fictional test records (see samples/README.md;
                     the HL7 C-CDA examples are linked there, not included)
 tests/              Node test scripts (no browser needed)
-.github/workflows/  pages.yml: build, test and publish to GitHub Pages
+.github/workflows/  ci.yml: lint + test on PRs; pages.yml: publish to GitHub Pages
 tools/              scripts that generate the fictional sample PDFs and text files
 docs/DESIGN.md      design notes
 ```
@@ -76,10 +76,12 @@ node rtest.js               # reference-range parsing
 node deidtest.js VA_ROI_Printout_HESSEL_2026.pdf   # de-identification leak check
 node ingesttest.js          # Claude extraction with a mock reply (verification, restoration)
 node pathtest.js            # fallback to rules, direct (no substitution) mode
+node lint.js                # syntax-check the inline scripts of ../index.html
 ```
 
-## Publishing
+## CI and publishing
 
-`.github/workflows/pages.yml` publishes the viewer to GitHub Pages on every push to `main` (or by hand from the Actions tab). It rebuilds `index.html`, fails if the committed copy is out of date with `src/`, runs `npm test`, then deploys `index.html` and `samples/` (so **File › Load Sample Records** works on the published page). One-time setup: in the repository's **Settings › Pages**, set **Source** to **GitHub Actions**.
+- `.github/workflows/ci.yml` runs on every pull request (and on pushes to `main`) as two checks, **lint** and **test**. `lint` fails if the committed `index.html` is out of date with `src/` (run `python3 build.py` and commit), and syntax-checks the JavaScript (including the inline scripts of `index.html`, via `tests/lint.js`) and Python. `test` runs `npm test`. To make them block merging, add `lint` and `test` as required status checks in a branch ruleset for `main` (**Settings › Rules › Rulesets**, "Require status checks to pass").
+- `.github/workflows/pages.yml` builds `index.html` and publishes it with `samples/` (so **File › Load Sample Records** works) to GitHub Pages on every push to `main`, or by hand from the Actions tab. One-time setup: **Settings › Pages › Source: GitHub Actions**.
 
 `tests/mockgw.py` is a stand-in for an organization's Claude endpoint (Messages API format) used for browser testing.

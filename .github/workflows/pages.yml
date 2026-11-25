@@ -1,5 +1,7 @@
 name: Publish viewer to GitHub Pages
 
+# Lint and tests run in ci.yml, which branch protection requires on PRs into main;
+# this workflow only builds and deploys what reaches main.
 on:
   push:
     branches: [main]
@@ -25,26 +27,8 @@ jobs:
         with:
           python-version: '3.x'
 
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 20
-
       - name: Build index.html from src/
         run: python3 build.py
-
-      - name: Check the committed index.html is up to date
-        run: |
-          if ! git diff --quiet -- index.html; then
-            echo "::error file=index.html::index.html is out of date with src/. Run 'python3 build.py' and commit the result."
-            git diff --stat -- index.html
-            exit 1
-          fi
-
-      - name: Install test dependencies
-        run: npm install --no-audit --no-fund
-
-      - name: Run tests
-        run: npm test
 
       - name: Assemble site
         run: |
