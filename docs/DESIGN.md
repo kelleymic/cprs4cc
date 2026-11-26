@@ -55,3 +55,13 @@
 - Printed text: column positions are inferred from character offsets, so a table that a PDF extractor flattens badly can still be misread; every value keeps its source line so it can be checked.
 - Synthea sample labs carry no reference ranges.
 - LOINC mapping is name-based; tests outside the catalog keep only their printed name.
+
+## C-CDA validation against vendor samples
+The importer was run against 401 vendor-generated C-CDA R2.1 files (`jddamore/ccda-samples`, including Epic) and the full-document examples in `HL7/C-CDA-Examples`. Those files are not vendored here; `tests/unit/cda-realworld.test.js` holds small hand-written fixtures of each pattern they exposed:
+- `displayName="null"` is treated as missing, and the narrative text referenced by `originalText` is used instead.
+- "None" statements ("No known problems", "No information about procedures", nullFlavor "no known medications") are skipped and counted under `skipped.noneStatements`; the section narrative is still kept as unstructured text.
+- A medication that was explicitly refused (negated real drug) is kept with status `not-taken` and hidden from the active medication list.
+- Functional status, mental status and advance directives are filed as `survey` observations, and plan-of-treatment, goals and family-history sections are not filed as labs.
+- A result whose value is narrative only (empty `ED`) keeps that text as its value; negated code-less "results not available" placeholders are dropped.
+- Medications and immunizations wrapped in organizers or acts are found; free-text medications are kept.
+The eHealth Exchange sample files (`CCDA_CCD_b1_*`) could not be fetched from the build workspace and are not covered.

@@ -47,4 +47,4 @@ const section = (kind, inner, textXml) => cdaSection(SEC_ID[kind][0], SEC_ID[kin
 
 const hl7 = (...segs) => segs.join('\r') + '\r';
 
-module.exports = { E, ROOT, toBuf, importText, importPath, fresh, all, ofKind, byName, counts, patientOf, PAT, fhirBundle, labObs, cda, section, hl7, fs, path };
+module.exports = { cdaSection, E, ROOT, toBuf, importText, importPath, fresh, all, ofKind, byName, counts, patientOf, PAT, fhirBundle, labObs, cda, section, hl7, fs, path };

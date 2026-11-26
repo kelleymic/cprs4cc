@@ -1046,7 +1046,17 @@ const SEC = [
   ['encs', ['2.16.840.1.113883.10.20.22.2.22.1', '2.16.840.1.113883.10.20.22.2.22'], ['46240-8']],
   ['social', ['2.16.840.1.113883.10.20.22.2.17'], ['29762-2']],
   ['notes', ['2.16.840.1.113883.10.20.22.2.65'], []],
+  // functional / mental / cognitive status, advance directives, health-status evaluations: patient observations that are not labs
+  ['survey', ['2.16.840.1.113883.10.20.22.2.14', '2.16.840.1.113883.10.20.22.2.56', '2.16.840.1.113883.10.20.22.2.21.1', '2.16.840.1.113883.10.20.22.2.21', '2.16.840.1.113883.10.20.22.2.61', '2.16.840.1.113883.10.20.22.2.57'], ['47420-5', '10190-7', '42348-3', '11383-7', '61144-2']],
+  // past medical history reads like a problem list
+  ['problems', ['2.16.840.1.113883.10.20.22.2.20'], ['11348-0']],
+  // plans, goals, family history, assessments, health concerns: keep the text, but never file them as the patient's own results
+  ['narrative', ['2.16.840.1.113883.10.20.22.2.10', '2.16.840.1.113883.10.20.22.2.60', '2.16.840.1.113883.10.20.22.2.15', '2.16.840.1.113883.10.20.22.2.58', '2.16.840.1.113883.10.20.22.2.9', '2.16.840.1.113883.10.20.22.2.8'], ['18776-5', '61146-7', '10157-6', '75310-3', '51847-2', '51848-0', '8653-8']],
 ];
+const SEC_TITLE_RESULTS = /\b(results?|laborator\w*|diagnostic\w*|imaging|pathology|microbiology|radiology)\b/i;
+const NONE_RE = /^(?:no (?:known|information|data|record|current|active|significant|prior|previous|reported|documented|history)|none(?: known| reported| recorded| documented)?\b|nothing\b|not (?:available|applicable|on file)\b|patient has no known|no drug therapy)/i;
+const NONE_CODES = new Set(['396782006', '160245001', '182849000', '716186003', '160244002', '409137002', '1090801000168104']);   // "no known problems / medications / allergies ..." statements
+const isNoneStatement = cc => !!cc && (NONE_RE.test(String(cc.text || '').trim()) || (cc.coding || []).some(c => NONE_CODES.has(c.code)));
 const SUMMARY_DOC_CODES = new Set(['34133-9', '60591-5', '18761-7', '57133-1', '81218-0']);
 const T = {   // C-CDA entry templates
   PROBLEM_OBS: '2.16.840.1.113883.10.20.22.4.4', PROBLEM_STATUS: '2.16.840.1.113883.10.20.22.4.6', HEALTH_STATUS: '2.16.840.1.113883.10.20.22.4.5', AGE_OBS: '2.16.840.1.113883.10.20.22.4.31',
@@ -1082,9 +1092,10 @@ function importCDA(text, file, report) {
   const code = el => {
     if (!el) return null;
     const cc = { coding: [] };
-    const push = e => { if (at(e, 'code')) cc.coding.push({ system: OID[at(e, 'codeSystem')] || (at(e, 'codeSystem') ? 'urn:oid:' + at(e, 'codeSystem') : undefined), code: at(e, 'code'), display: at(e, 'displayName') || undefined }); };
+    const dn = e => { const d = at(e, 'displayName').trim(); return d && !/^(null|undefined)$/i.test(d) ? d : ''; };   // some EHRs print the literal string "null"
+    const push = e => { if (at(e, 'code')) cc.coding.push({ system: OID[at(e, 'codeSystem')] || (at(e, 'codeSystem') ? 'urn:oid:' + at(e, 'codeSystem') : undefined), code: at(e, 'code'), display: dn(e) || undefined }); };
     push(el); kids(el, 'translation').forEach(push);
-    cc.text = at(el, 'displayName') || tx(kid(el, 'originalText')) || (cc.coding.find(c => c.display) || {}).display || undefined;
+    cc.text = dn(el) || tx(kid(el, 'originalText')) || (cc.coding.find(c => c.display) || {}).display || undefined;
     if (!cc.coding.length) delete cc.coding;
     return (cc.coding || cc.text) ? cc : null;
   };
@@ -1094,7 +1105,7 @@ function importCDA(text, file, report) {
   const personName = n => n ? [txt(kid(n, 'prefix')), ...kids(n, 'given').filter(g => at(g, 'qualifier') !== 'CL').map(txt), txt(kid(n, 'family')), txt(kid(n, 'suffix'))].filter(Boolean).join(' ') || txt(n) : '';
   const hasTpl = (el, roots) => kids(el, 'templateId').some(t => roots.includes(at(t, 'root')));
   const statusOf = el => at(kid(el, 'statusCode'), 'code').toLowerCase();
-  const skipped = { nullified: 0, negatedMed: 0, planned: 0 };
+  const skipped = { nullified: 0, negatedMed: 0, planned: 0, none: 0 };
 
   // ---- header
   const pr = path(root, 'recordTarget', 'patientRole'); const pt = pr && kid(pr, 'patient');
@@ -1170,12 +1181,15 @@ function importCDA(text, file, report) {
 
   const obsFrom = (o, cat, fallbackTime) => {
     const st = statusOf(o); if (st === 'nullified' || st === 'obsolete') { skipped.nullified++; return null; }
-    const r = { resourceType: 'Observation', status: CDA_OBS_STATUS[st] || 'final', category: [{ coding: [{ system: OBSCAT, code: cat, display: { laboratory: 'Laboratory', 'vital-signs': 'Vital Signs', 'social-history': 'Social History', exam: 'Exam' }[cat] }] }], code: code(kid(o, 'code')) || { text: 'Observation' } };
+    const r = { resourceType: 'Observation', status: CDA_OBS_STATUS[st] || 'final', category: [{ coding: [{ system: OBSCAT, code: cat, display: { laboratory: 'Laboratory', 'vital-signs': 'Vital Signs', 'social-history': 'Social History', exam: 'Exam', survey: 'Survey' }[cat] }] }], code: code(kid(o, 'code')) || { text: 'Observation' } };
     const dt = ts(kid(o, 'effectiveTime')) || fallbackTime; if (dt) r.effectiveDateTime = dt;
     const v = kid(o, 'value'); setValue(r, v, o);
+    const noCode = !(r.code.coding && r.code.coding.length) && (!r.code.text || r.code.text === 'Observation');
     if (!['valueQuantity', 'valueRange', 'valueRatio', 'valueInteger', 'valueCodeableConcept', 'valueBoolean', 'valueDateTime', 'valueString'].some(k => r[k] != null)) {
-      const t = tx(kid(o, 'text')); if (t && t.length < 500 && (!v || at(v, 'nullFlavor'))) r.valueString = t;   // value given only as narrative
+      const t = tx(kid(o, 'text')); if (t && t.length < 3000) r.valueString = t;   // value given only as narrative (empty <value>, imaging impressions, ...)
     }
+    if (noCode && (at(o, 'negationInd') === 'true' || NONE_RE.test(r.valueString || '') || /\bexcluded\b/i.test(r.valueString || ''))) { skipped.none++; return null; }   // negated / "results excluded or not available" placeholder
+    if (noCode && !['valueQuantity', 'valueRange', 'valueRatio', 'valueInteger', 'valueCodeableConcept', 'valueBoolean', 'valueDateTime', 'valueString'].some(k => r[k] != null)) { skipped.none++; return null; }   // "results not available" placeholder
     const ics = kids(o, 'interpretationCode').filter(ic => at(ic, 'code')); if (ics.length) r.interpretation = ics.map(ic => flagCode(at(ic, 'code')) || { text: at(ic, 'code') });
     const rr = path(o, 'referenceRange', 'observationRange');
     if (rr) {
@@ -1199,6 +1213,7 @@ function importCDA(text, file, report) {
     const stitle = txt(kid(sec, 'title')) || (code(kid(sec, 'code')) || {}).text || 'Section ' + (si + 1);
     const scode = at(kid(sec, 'code'), 'code');
     let type = null; for (const [t, tpl, codes] of SEC) if (hasTpl(sec, tpl) || codes.includes(scode)) { type = t; break; }
+    if (!type && SEC_TITLE_RESULTS.test(stitle)) type = 'results';
     const entries = kids(sec, 'entry');
     const locBase = 'section "' + stitle + '"';
     let made = 0;
@@ -1229,10 +1244,10 @@ function importCDA(text, file, report) {
       }
     };
 
-    entries.forEach((en, i) => {
-      const el = Array.from(en.childNodes).find(n => n.nodeType === 1); if (!el) return;
-      if (type === 'results' || type === 'vitals' || type === 'social' || (!type && (el.localName === 'organizer' || el.localName === 'observation'))) {
-        const cat = type === 'vitals' ? 'vital-signs' : type === 'social' ? 'social-history' : 'laboratory';
+    const handle = (el, i) => {
+      const planned = at(el, 'moodCode') && at(el, 'moodCode') !== 'EVN';          // orders / plans are not results
+      if (type === 'results' || type === 'vitals' || type === 'social' || type === 'survey' || (!type && !planned && (el.localName === 'organizer' || el.localName === 'observation'))) {
+        const cat = type === 'vitals' ? 'vital-signs' : type === 'social' ? 'social-history' : type === 'survey' ? 'survey' : !type ? 'exam' : 'laboratory';
         const made0 = made;
         if (el.localName === 'organizer') doOrganizer(el, cat, i, null, type === 'results');
         else if (el.localName === 'observation') { const ob = obsFrom(el, cat, null); if (ob) add(ob, i); }
@@ -1250,6 +1265,8 @@ function importCDA(text, file, report) {
           const v = kid(o, 'value'); let cc = code(v);
           if (!cc) { const t = tx(kid(o, 'text')); cc = t ? { text: t } : null; }
           if (!cc) return;
+          const GENERIC_PROBLEM = ['55607006', '64572001', '404684003', '282291009', '418799008', '75326-9', '29308-4'];       // "problem", "condition", "finding", "diagnosis" ...
+          if (isNoneStatement(cc) || (at(o, 'negationInd') === 'true' && ((cc.coding || []).some(c => GENERIC_PROBLEM.includes(c.code)) || /^(problem|condition|diagnos[ie]s|finding)s?$/i.test(cc.text || '') || NONE_RE.test(tx(kid(o, 'text')))))) { skipped.none++; return; }
           const r = { resourceType: 'Condition', category: [{ coding: [{ system: 'http://terminology.hl7.org/CodeSystem/condition-category', code: 'problem-list-item', display: 'Problem List Item' }] }], code: cc };
           const eff = kid(o, 'effectiveTime') || kid(el, 'effectiveTime'); const on = ts(eff), ab = tsHigh(eff); if (on) r.onsetDateTime = on; if (ab) r.abatementDateTime = ab;
           const so = obsAll.find(x => x !== o && within(o, x) && isMeta(x) && at(kid(x, 'code'), 'code') === '33999-4');
@@ -1265,15 +1282,17 @@ function importCDA(text, file, report) {
       if (type === 'meds' && el.localName === 'substanceAdministration') {
         const st = statusOf(el);
         if (st === 'nullified') { skipped.nullified++; return; }
-        if (at(el, 'negationInd') === 'true') { skipped.negatedMed++; return; }          // "no known medications" / "not taking"
         const mm = path(el, 'consumable', 'manufacturedProduct', 'manufacturedMaterial');
+        const insEl = all(el, 'substanceAdministration').find(a => a !== el && hasTpl(a, ['2.16.840.1.113883.10.20.22.4.147'])); const insTxt = insEl ? tx(kid(insEl, 'text')) : '';
         const cc = code(kid(mm, 'code')) || {}; if (!cc.text) cc.text = txt(kid(mm, 'name')) || tx(path(el, 'consumable', 'manufacturedProduct', 'text')) || undefined;
-        if (!cc.coding && !cc.text) { skipped.negatedMed++; return; }
+        if (!cc.coding && !cc.text) { const free = insTxt || tx(kid(el, 'text')); if (free && !NONE_RE.test(free)) cc.text = free.length > 160 ? free.slice(0, 157) + '...' : free; }   // free-text medication, no product coded
+        if ((!cc.coding && !cc.text) || isNoneStatement(cc)) { skipped.negatedMed++; return; }          // "no known medications"
+        const notTaken = at(el, 'negationInd') === 'true';                                              // a real drug that the patient is NOT taking / refused
         const mood = at(el, 'moodCode'); const intent = mood === 'INT' || mood === 'RQO' || mood === 'PRP';
         const ets = kids(el, 'effectiveTime'); const isFreq = e => /^(PIVL|EIVL)/.test(xtype(e)) || !!kid(e, 'period') || !!kid(e, 'phase');
         const periodEl = ets.find(e => !isFreq(e)), freqEl = ets.find(isFreq);
         const start = periodEl ? ts(periodEl) : null, end = periodEl ? tsHigh(periodEl) : null;
-        let sig = tx(kid(el, 'text'));
+        let sig = insTxt || tx(kid(el, 'text'));
         if (!sig) {
           const dq = kid(el, 'doseQuantity'); const unitName = at(kid(el, 'administrationUnitCode'), 'displayName');
           const dose = dq && at(dq, 'value') ? at(dq, 'value') + ' ' + (unitOf(dq) || unitName || '') : '';
@@ -1283,8 +1302,8 @@ function importCDA(text, file, report) {
         }
         const stopped = st === 'aborted' || st === 'cancelled', hold = st === 'suspended' || st === 'held';
         const past = end && Date.parse(end) < Date.now();
-        const status = stopped ? 'stopped' : hold ? 'on-hold' : (st === 'completed' || past) ? 'completed' : 'active';
-        const r = intent ? { resourceType: 'MedicationRequest', status: stopped ? 'stopped' : hold ? 'on-hold' : st === 'completed' ? 'completed' : 'active', intent: 'plan', medicationCodeableConcept: cc, authoredOn: start || undefined }
+        const status = notTaken ? 'not-taken' : stopped ? 'stopped' : hold ? 'on-hold' : (st === 'completed' || past) ? 'completed' : 'active';
+        const r = intent && !notTaken ? { resourceType: 'MedicationRequest', status: stopped ? 'stopped' : hold ? 'on-hold' : st === 'completed' ? 'completed' : 'active', intent: 'plan', medicationCodeableConcept: cc, authoredOn: start || undefined }
           : { resourceType: 'MedicationStatement', status, medicationCodeableConcept: cc, effectivePeriod: start || end ? { start: start || undefined, end: end || undefined } : undefined };
         if (sig) { if (r.resourceType === 'MedicationRequest') r.dosageInstruction = [{ text: sig }]; else r.dosage = [{ text: sig }]; }
         add(r, i); return;
@@ -1329,6 +1348,10 @@ function importCDA(text, file, report) {
         const st = statusOf(el); if (st === 'nullified') { skipped.nullified++; return; }
         if (/^(INT|RQO|PRP|PRMS)$/.test(at(el, 'moodCode'))) { skipped.planned++; return; }
         const mm = path(el, 'consumable', 'manufacturedProduct', 'manufacturedMaterial');
+        const vc = code(kid(mm, 'code'));
+        if (!vc && !txt(kid(mm, 'name'))) { skipped.none++; return; }                        // empty placeholder entry
+        const generic = !vc || isNoneStatement(vc) || !(vc.coding || []).some(c => c.code && c.code !== '71181003');
+        if (at(el, 'negationInd') === 'true' && generic) { skipped.none++; return; }      // "no immunizations on record"
         const notDone = at(el, 'negationInd') === 'true' || st === 'aborted' || st === 'cancelled';
         const r = { resourceType: 'Immunization', status: notDone ? 'not-done' : 'completed', vaccineCode: code(kid(mm, 'code')) || { text: txt(kid(mm, 'name')) || 'Vaccine' }, occurrenceDateTime: ts(kid(el, 'effectiveTime')) || undefined };
         if (!r.occurrenceDateTime) r.occurrenceString = 'unknown';
@@ -1340,6 +1363,7 @@ function importCDA(text, file, report) {
       if (type === 'procs') {
         const st = statusOf(el); if (st === 'nullified') { skipped.nullified++; return; }
         const mood = at(el, 'moodCode');
+        { const pc = code(kid(el, 'code')) || { text: tx(kid(el, 'text')) }; if (isNoneStatement(pc)) { skipped.none++; return; } }
         const r = { resourceType: 'Procedure', status: at(el, 'negationInd') === 'true' || st === 'aborted' || st === 'cancelled' ? 'not-done' : st === 'active' ? 'in-progress' : /^(INT|RQO|PRP)$/.test(mood) ? 'preparation' : 'completed', code: code(kid(el, 'code')) || { text: tx(kid(el, 'text')) || 'Procedure' } };
         const eff = kid(el, 'effectiveTime'); const s = ts(eff), e = tsHigh(eff); if (s && e && e !== s) r.performedPeriod = { start: s, end: e }; else if (s) r.performedDateTime = s;
         const bs = code(kid(el, 'targetSiteCode')); if (bs) r.bodySite = [bs];
@@ -1359,6 +1383,12 @@ function importCDA(text, file, report) {
         const r = makeDoc({ title: nc.text || stitle, date: ts(kid(el, 'effectiveTime')), author: personName(path(el, 'author', 'assignedAuthor', 'assignedPerson', 'name')), custodian, body });
         add(r, i); return;
       }
+    };
+    entries.forEach((en, i) => {
+      const el0 = Array.from(en.childNodes).find(n => n.nodeType === 1); if (!el0) return;
+      // medications / immunizations are sometimes wrapped in an organizer or act (varied dosing, grouped doses): handle each administration itself
+      if ((type === 'meds' || type === 'imms') && el0.localName !== 'substanceAdministration') { const sas = all(el0, 'substanceAdministration').filter(a => !all(el0, 'substanceAdministration').some(o => o !== a && within(o, a))); if (sas.length) { sas.forEach(a => handle(a, i)); return; } }
+      handle(el0, i);
     });
     const narr = narrative(sec);
     if (isNoteDoc) { if (narr) noteParts.push(stitle.toUpperCase() + ':\n' + narr); }
@@ -1378,6 +1408,7 @@ function importCDA(text, file, report) {
     if (/text|html/.test(mt) || !mt) addResource(makeDoc({ title: docTitle, date: docDate, author, custodian, body: /html/.test(mt) ? htmlToText(body) : body, loincCode: docLoinc, loincDisplay: docCode.text }), file, { locator: 'nonXMLBody' }, pKey, report);
     else addUnstructured('Embedded ' + mt + ' document body (not text) in ' + docTitle, file, { locator: 'nonXMLBody' }, pKey, report, { date: docDate }); }
   if (skipped.nullified) report.warnings.push(skipped.nullified + ' entr' + (skipped.nullified === 1 ? 'y' : 'ies') + ' with status "nullified" (entered in error) were not imported.');
+  if (skipped.none) report.skipped = Object.assign(report.skipped || {}, { noneStatements: skipped.none });
   if (skipped.planned) report.warnings.push(skipped.planned + ' planned or proposed immunization(s) were not imported.');
   if (skipped.negatedMed) report.skipped = Object.assign(report.skipped || {}, { negatedOrEmptyMedications: skipped.negatedMed });
 }
@@ -2545,7 +2576,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter') { const li = 
 function latestByName(list) { const m = new Map(); for (const x of list.sort(byDateDesc)) { const k = x.d.name.toUpperCase(); if (!m.has(k)) m.set(k, x); } return [...m.values()]; }
 function renderCover() {
   const probs = items('problem').filter(x => !/^(resolved|inactive|refuted|remission)$/.test(x.d.status)).sort(byDateDesc);
-  const alls = items('allergy'); const meds = items('med').filter(x => !/completed|stopped|cancelled|entered-in-error/.test(x.d.status)).sort(byDateDesc);
+  const alls = items('allergy'); const meds = items('med').filter(x => !/completed|stopped|cancelled|entered-in-error|not-taken/.test(x.d.status)).sort(byDateDesc);
   const imms = items('imm').sort(byDateDesc);
   const labs = items('lab').sort(byDateDesc); const labDates = []; for (const x of labs) { const k = (x.d.date || '').slice(0, 16); if (!labDates.length || labDates[labDates.length - 1].k !== k) labDates.push({ k, r: x.r, d: x.d, n: 1, ab: x.d.flag ? 1 : 0, names: [x.d.name] }); else { const g = labDates[labDates.length - 1]; g.n++; if (x.d.flag) g.ab++; g.names.push(x.d.name); } }
   const vit = latestByName(items('vital'));

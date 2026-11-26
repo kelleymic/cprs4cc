@@ -309,7 +309,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Enter') { const li = 
 function latestByName(list) { const m = new Map(); for (const x of list.sort(byDateDesc)) { const k = x.d.name.toUpperCase(); if (!m.has(k)) m.set(k, x); } return [...m.values()]; }
 function renderCover() {
   const probs = items('problem').filter(x => !/^(resolved|inactive|refuted|remission)$/.test(x.d.status)).sort(byDateDesc);
-  const alls = items('allergy'); const meds = items('med').filter(x => !/completed|stopped|cancelled|entered-in-error/.test(x.d.status)).sort(byDateDesc);
+  const alls = items('allergy'); const meds = items('med').filter(x => !/completed|stopped|cancelled|entered-in-error|not-taken/.test(x.d.status)).sort(byDateDesc);
   const imms = items('imm').sort(byDateDesc);
   const labs = items('lab').sort(byDateDesc); const labDates = []; for (const x of labs) { const k = (x.d.date || '').slice(0, 16); if (!labDates.length || labDates[labDates.length - 1].k !== k) labDates.push({ k, r: x.r, d: x.d, n: 1, ab: x.d.flag ? 1 : 0, names: [x.d.name] }); else { const g = labDates[labDates.length - 1]; g.n++; if (x.d.flag) g.ab++; g.names.push(x.d.name); } }
   const vit = latestByName(items('vital'));
