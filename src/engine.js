@@ -1777,6 +1777,8 @@ const EXTRACT_SCHEMA = `{
   {"type":"allergy","page":4,"line":14,"substance":"Penicillin","reaction":"hives","severity":"moderate","date":""},
   {"type":"immunization","page":5,"line":3,"vaccine":"Influenza","date":""},
   {"type":"procedure","page":5,"line":8,"name":"Colonoscopy","date":"","time":""},
+  {"type":"functional","page":3,"line":6,"scale":"ECOG","value":"1","date":"","time":""},
+  {"type":"functional","page":3,"line":7,"scale":"OTHER","name":"Ambulation","value":"Uses a cane","date":"","time":""},
   {"type":"encounter","page":1,"line":20,"description":"Primary care visit","status":"completed","date":"","time":""},
   {"type":"document","docType":"progress","title":"PRIMARY CARE NOTE","author":"","date":"","time":"","startPage":3,"startLine":16,"endPage":4,"endLine":12}
  ],
@@ -1801,6 +1803,7 @@ function buildPrompt(batch, context, deid) {
   lines.push('- vital is one of BP, PULSE, RESP, TEMP, SPO2, WEIGHT, HEIGHT, BMI, PAIN, OTHER.');
   lines.push('- "date" is the date that applies to the item, copied exactly as written in the text' + (deid ? ' (normally a [D-n] placeholder)' : '') + '; "time" is HH:MM in 24-hour form if a time is printed. For a lab block use its collection date; for a table with one column per date, emit one item per filled cell with that column\'s date; for a list under a dated heading use the heading\'s date. Use "" when no date applies.');
   lines.push('- "page" and "line" point to the line where the item\'s value is printed. Copy "value" exactly as printed (number only, no units); copy "flag" exactly as printed (H, L, HH, LL, A, *, High, Low, Abnormal), else "". Copy "refRange" exactly as printed.');
+  lines.push('- functional items record functional status. scale is ECOG (0-5), KARNOFSKY (0-100), LANSKY (0-100, the children\'s play-performance scale), PPS (palliative performance scale, 0-100) or OTHER. For the four scales "value" is the score as printed (number only, no % sign). For OTHER (activities of daily living, mobility, self-care, cognition and similar findings that are not one of those scales) give the finding in "name" and the result as printed in "value". Do not make functional items from narrative note text.');
   lines.push('- Notes, consults, discharge summaries, radiology, pathology and other narrative reports are "document" items. docType is one of progress, consult, discharge, radiology, pathology, other. Give the full line range including header and signature. Do NOT copy document text; the viewer takes it from the cited lines.');
   lines.push('- Only create problem items from an actual problem list or diagnosis list. Never from note text, headings, page headers or footers, instructions or education material.');
   lines.push('- When an item spans several lines (a key/value block such as an allergy with Reaction and Type lines, a medication with its instructions, a lab comment line), add "endPage" and "endLine" for its last line.');
@@ -1986,6 +1989,24 @@ function ingestClaude(results, ctx) {
           r = makeVital(k, [null, nm[0], u], dt); }
         else { r = { resourceType: 'Observation', status: 'final', category: [{ coding: [{ system: OBSCAT, code: 'vital-signs', display: 'Vital Signs' }] }], code: { text: R(str(it.name)) || 'Vital sign' }, valueString: R(val) }; if (dt) r.effectiveDateTime = dt; }
         if (!dt) report.warnings.push('Vital sign (p.' + p + ' line ' + l + ') has no date.');
+      } else if (type === 'functional') {
+        const sk = str(it.scale).toUpperCase().replace(/[^A-Z]/g, ''); const scale = { ECOG: 'ecog', ZUBROD: 'ecog', KARNOFSKY: 'karnofsky', KPS: 'karnofsky', LANSKY: 'lansky', PPS: 'pps', PALLIATIVEPERFORMANCESCALE: 'pps' }[sk] || null;
+        const val = str(it.value).replace(/\s*%$/, ''); const dt = dateOf(it.date, it.time);
+        if (scale) {
+          const nm = val.match(/^\d{1,3}$/); const sc = FUNC_SCALES[scale];
+          if (!nm || +val > sc.max || (sc.step > 1 && +val % 5)) { reject(it, 'not a valid ' + sc.short + ' score'); continue; }
+          const alias = { ecog: /ECOG|ZUBROD|WHO|PERFORMANCE/i, karnofsky: /KARNOFSKY|KPS/i, lansky: /LANSKY/i, pps: /PALLIATIVE|PPS/i }[scale];
+          let named = false; for (let k = l - 2; k <= l + 2 && !named; k++) { const t = sentLine(p, k); if (t && alias.test(t)) named = true; }
+          check = near(p, l, val); if (!named || !check) { reject(it, sc.short + ' score or scale name not found on the cited line'); continue; }
+          r = makeFunc(scale, [null, val], dt);
+        } else {
+          const nm2 = R(str(it.name)); const v2 = R(val); if (!nm2 || !v2) { reject(it, 'functional finding without a name or result'); continue; }
+          check = near(p, l, val.replace(TOKEN_RE, '').replace(/[^A-Za-z0-9]/g, '').slice(0, 8)); const chkN = near(p, l, str(it.name).replace(TOKEN_RE, '').replace(/[^A-Za-z0-9]/g, '').slice(0, 6));
+          if (!check || !chkN) { reject(it, 'functional finding not found on the cited line'); continue; }
+          r = { resourceType: 'Observation', status: 'final', category: [{ coding: [{ system: OBSCAT, code: 'survey', display: 'Survey' }] }, { coding: [{ system: CS_LOCAL, code: FUNC_CAT, display: 'Functional status' }] }], code: { text: nm2 }, valueString: v2 };
+          if (dt) r.effectiveDateTime = dt;
+        }
+        if (!dt) report.warnings.push('Functional status (p.' + p + ' line ' + l + ') has no date.');
       } else if (type === 'problem') {
         const text = R(str(it.text)); check = near(p, l, str(it.text).replace(TOKEN_RE, '').replace(/[^A-Za-z0-9]/g, '').slice(0, 8)); if (!text || !check) { reject(it, 'problem text not found on the cited line'); continue; }
         const cc = { text }; const cs = str(it.codeSystem).toUpperCase(); if (str(it.code)) cc.coding = [{ system: /SNOMED|SCT/.test(cs) ? SCT : /9/.test(cs) ? 'http://hl7.org/fhir/sid/icd-9-cm' : 'http://hl7.org/fhir/sid/icd-10-cm', code: str(it.code), display: text }];

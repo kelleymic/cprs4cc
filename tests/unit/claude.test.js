@@ -51,3 +51,25 @@ test('direct mode sends the text as it is and takes the patient from the model',
   assert.ok(!sent[0].includes('[D-n]'));
   assert.equal(E.state.patients[0].resource.name[0].family, 'HESSEL');
 });
+
+test('Claude path: functional status items (scales and other findings) are verified against the cited line', async () => {
+  const txt = 'Patient: DOE, JANE\nDOB: 01/02/1960\nMRN: 12345\n\nASSESSMENT 03/01/2025\nECOG performance status: 1\nKarnofsky: 80%\nAmbulation: Uses a cane\nLansky score: 90\nWeight 150 lb\n';
+  const prep = await E.prepareClaudeImport('assess.txt', H.toBuf(Buffer.from(txt)), { mode: 'direct' });
+  let prompt = ''; const lineOf = re => { const m = prompt.match(new RegExp('^(\\d+)\\|' + re, 'm')); return m ? +m[1] : 0; };
+  await E.runClaudeImport(prep, async p => {
+    prompt = p;
+    const f = (scale, value, re, extra) => Object.assign({ type: 'functional', page: 1, line: lineOf(re), scale, value, date: '03/01/2025', time: '' }, extra);
+    return { patient: { family: 'DOE', given: 'JANE', dob: '1960-01-02' }, items: [
+      f('ECOG', '1', 'ECOG'), f('KARNOFSKY', '80%', 'Karnofsky'), f('OTHER', 'Uses a cane', 'Ambulation', { name: 'Ambulation' }),
+      f('LANSKY', '90', 'Lansky'),
+      f('LANSKY', '85', 'Lansky'),                                   // the printed score is 90: a value that is not on the line is rejected
+      f('ECOG', '7', 'ECOG'),                                        // outside the 0-5 range
+      f('KARNOFSKY', '70', 'ECOG'),                                  // the scale is not named on the cited line
+      f('ECOG', '4', 'Weight'),                                      // invented: not on that line
+    ], unmapped: [] };
+  }, {});
+  const x = H.ofKind('func').map(i => i.d.scale ? i.d.scale + ':' + i.d.score : i.d.name + '=' + i.d.value).sort();
+  assert.deepEqual(x, ['Ambulation=Uses a cane', 'ecog:1', 'karnofsky:80', 'lansky:90'].sort());
+  assert.ok(H.ofKind('func').every(i => i.d.date === '2025-03-01'));
+  assert.ok(H.ofKind('unstructured').filter(u => /Not verified/.test(u.d.name)).length >= 4, 'rejected items are kept as unverified text');
+});
