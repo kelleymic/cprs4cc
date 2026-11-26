@@ -57,6 +57,7 @@ src/catalog.txt     LOINC mapping table (code | long name | printed names | spec
 samples/            synthetic and fictional test records (see samples/README.md;
                     the HL7 C-CDA examples are linked there, not included)
 tests/              Node test scripts (no browser needed)
+.github/workflows/  ci.yml: lint + test on PRs; pages.yml: publish to GitHub Pages
 tools/              scripts that generate the fictional sample PDFs and text files
 docs/DESIGN.md      design notes
 ```
@@ -66,7 +67,7 @@ docs/DESIGN.md      design notes
 ```
 npm ci                      # pdfjs-dist, @xmldom/xmldom, jszip (test-only dependencies)
 python3 build.py            # regenerate index.html after editing src/
-npm test                    # node --test "tests/unit/*.test.js"  (Node 20+, TZ is pinned by the tests)
+npm test                    # node --test tests/unit/*.test.js  (Node 20+, TZ is pinned by the tests)
 ```
 
 The tests are assertions, not printouts:
@@ -79,6 +80,14 @@ The tests are assertions, not printouts:
 | `text.test.js` | printed / PDF labs (tables, one column per date, key/value blocks, qualitative results), vitals, HTML, encodings, identity, ZIP limits |
 | `terminology.test.js` | LOINC catalog check digits, name to LOINC mapping, range and flag parsing |
 | `samples.test.js` | golden counts for `samples/`, Synthea ground truth, FHIR vs C-CDA parity, export and re-import round trip |
+| `cda-realworld.test.js` | patterns found in vendor-generated C-CDAs: null display names, "none" statements, misfiled sections, organizer-wrapped meds |
+| `functional.test.js` | ECOG / Karnofsky / Lansky / PPS scores and other functional findings from FHIR, C-CDA and printed text |
 | `claude.test.js` | the optional Claude extraction path with a scripted model (verification, fallback, no identifiers sent) |
 
 `tests/legacy/` keeps the earlier exploratory scripts (they print, they do not assert). `tests/mockgw.py` is a stand-in for an organization's Claude endpoint (Messages API format) used for browser testing.
+
+## CI and publishing
+
+- `.github/workflows/ci.yml` runs on every pull request (and on pushes to `main`) as two checks, **lint** and **test**. `lint` fails if the committed `index.html` is out of date with `src/` (run `python3 build.py` and commit), and syntax-checks the JavaScript (including the inline scripts of `index.html`, via `tests/lint.js`) and Python. `test` runs `npm test`. To make them block merging, add `lint` and `test` as required status checks in a branch ruleset for `main` (**Settings › Rules › Rulesets**, "Require status checks to pass").
+- `.github/workflows/pages.yml` builds `index.html` and publishes it with `samples/` (so **File › Load Sample Records** works) to GitHub Pages on every push to `main`, or by hand from the Actions tab. One-time setup: **Settings › Pages › Source: GitHub Actions**.
+
