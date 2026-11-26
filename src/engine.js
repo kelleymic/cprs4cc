@@ -281,8 +281,56 @@ function ensureUnknownPatient(file) {
 }
 
 /* ---- classification ---- */
+/* ---- functional status: performance scales (ECOG, Karnofsky, Lansky, Palliative Performance Scale) ----
+   Scores are normalized to a numeric valueQuantity (unit {score}) so they can be listed and trended like a vital sign. */
+const ECOG_TXT = ['Fully active, able to carry on all pre-disease performance without restriction', 'Restricted in physically strenuous activity but ambulatory and able to do light or sedentary work', 'Ambulatory and capable of all self-care but unable to work; up and about more than 50% of waking hours', 'Capable of only limited self-care; confined to bed or chair more than 50% of waking hours', 'Completely disabled; cannot carry on any self-care; totally confined to bed or chair', 'Dead'];
+const KPS_TXT = { 100: 'Normal; no complaints; no evidence of disease', 90: 'Able to carry on normal activity; minor signs or symptoms', 80: 'Normal activity with effort; some signs or symptoms', 70: 'Cares for self; unable to carry on normal activity or do active work', 60: 'Requires occasional assistance but able to care for most needs', 50: 'Requires considerable assistance and frequent medical care', 40: 'Disabled; requires special care and assistance', 30: 'Severely disabled; hospitalization indicated although death not imminent', 20: 'Very sick; hospitalization necessary; active supportive treatment', 10: 'Moribund; fatal processes progressing rapidly', 0: 'Dead' };
+const LANSKY_TXT = { 100: 'Fully active, normal', 90: 'Minor restrictions in physically strenuous activity', 80: 'Active, but tires more quickly', 70: 'Greater restriction of, and less time spent in, play activities', 60: 'Up and around, but minimal active play; keeps busy with quieter activities', 50: 'Gets dressed but lies around much of the day; no active play; able to do quiet play and activities', 40: 'Mostly in bed; participates in quiet activities', 30: 'In bed; needs assistance even for quiet play', 20: 'Often sleeping; play entirely limited to very passive activities', 10: 'No play; does not get out of bed', 5: 'Unresponsive', 0: 'Dead' };
+const FUNC_SCALES = {
+  ecog: { name: 'ECOG performance status', short: 'ECOG', max: 5, step: 1, better: 'lower', who: 'adults', text: s => ECOG_TXT[s] },
+  karnofsky: { name: 'Karnofsky performance status', short: 'Karnofsky', max: 100, step: 10, better: 'higher', who: 'adults', text: s => KPS_TXT[s] },
+  lansky: { name: 'Lansky play-performance scale', short: 'Lansky', max: 100, step: 10, better: 'higher', who: 'children (0-16 y)', text: s => LANSKY_TXT[s] },
+  pps: { name: 'Palliative performance scale', short: 'PPS', max: 100, step: 10, better: 'higher', who: 'palliative care', text: () => '' },
+};
+const ECOG_LA = { 'LA9622-7': 0, 'LA9623-5': 1, 'LA9624-3': 2, 'LA9625-0': 3, 'LA9626-8': 4, 'LA9627-6': 5 };
+const FUNC_CODES = { '89247-1': 'ecog', '89243-0': 'karnofsky', 'C38144': 'lansky' };
+const FUNC_NAME_RE = [['lansky', /\blansky\b/i], ['karnofsky', /\bkarnofsky\b|\bKPS\b/i], ['pps', /\bpalliative performance\b|\bPPS\b/i], ['ecog', /\bECOG\b|\bzubrod\b|\bWHO performance\b|\beastern cooperative\b/i]];
+function funcScaleOf(r) {
+  for (const c of (r.code && r.code.coding) || []) if (FUNC_CODES[c.code]) return FUNC_CODES[c.code];
+  const t = codeText(r.code) + ' ' + ((r.code && r.code.coding) || []).map(c => c.display || '').join(' ');
+  for (const [k, re] of FUNC_NAME_RE) if (re.test(t)) return k;
+  return null;
+}
+function funcScore(r, scale) {                                  // numeric score from whatever value form the source used
+  if (r.valueQuantity && r.valueQuantity.value != null && !isNaN(+r.valueQuantity.value)) return +r.valueQuantity.value;
+  if (r.valueInteger != null) return +r.valueInteger;
+  const cc = r.valueCodeableConcept;
+  if (cc) { for (const c of cc.coding || []) if (ECOG_LA[c.code] != null) return ECOG_LA[c.code]; }
+  const t = r.valueString != null ? String(r.valueString) : cc ? codeText(cc) : '';
+  const m = t.match(/(?:^|[^\d.])(\d{1,3})(?:\s*%)?(?![\d.])/); if (m) return +m[1];
+  if (scale === 'ecog' && t) { for (const [i, tx] of ECOG_TXT.entries()) if (t.toLowerCase().indexOf(tx.toLowerCase().slice(0, 18)) >= 0) return i; }
+  return null;
+}
+function funcInfo(r) {                                          // {scale, score, meaning} for a recognized performance scale
+  const scale = funcScaleOf(r); if (!scale) return null;
+  const sc = FUNC_SCALES[scale]; const v = funcScore(r, scale);
+  if (v == null || isNaN(v) || v < 0 || v > sc.max) return { scale, score: null, meaning: '' };
+  return { scale, score: v, meaning: sc.text(v) || '' };
+}
+function normalizeFunc(r) {                                     // store the score as a quantity so it can be trended
+  if (r.resourceType !== 'Observation') return;
+  const fi = funcInfo(r); if (!fi || fi.score == null) return;
+  if (r.valueQuantity && +r.valueQuantity.value === fi.score && !r.valueString && !r.valueInteger && !r.valueCodeableConcept) return;
+  const orig = r.valueString != null ? String(r.valueString) : r.valueCodeableConcept ? codeText(r.valueCodeableConcept) : null;
+  if (orig && orig.replace(/\D/g, '') !== String(fi.score) && !(r.note || []).some(n => n.text === 'Reported as: ' + orig)) (r.note = r.note || []).push({ text: 'Reported as: ' + orig });
+  delete r.valueString; delete r.valueInteger; delete r.valueCodeableConcept; delete r.valueRange;
+  r.valueQuantity = { value: fi.score, unit: 'score', system: UCUM, code: '{score}' };
+}
+const FUNC_CAT = 'functional-status';
+
 function obsKind(r) {
   const cats = (r.category || []).flatMap(c => (c.coding || []).map(x => x.code));
+  if (cats.includes(FUNC_CAT) || funcScaleOf(r)) return 'func';
   if (cats.includes('vital-signs')) return 'vital';
   if (cats.includes('laboratory')) return 'lab';
   if (cats.includes('social-history')) return 'social';
@@ -346,7 +394,7 @@ function primaryValue(r) { return obsValue(r).value; }
 function dedupeKey(r, kind) {
   const loinc = cc => { const c = (cc && cc.coding || []).find(x => x.system === LOINC || x.system === SCT); return c ? c.code : norm(codeText(cc)); };
   switch (kind) {
-    case 'lab': case 'vital': case 'social': case 'survey': case 'obs-other':
+    case 'lab': case 'vital': case 'social': case 'survey': case 'func': case 'obs-other':
       return 'obs|' + loinc(r.code) + '|' + minuteKey(obsDate(r)) + '|' + primaryValue(r);
     case 'problem': return 'cond|' + loinc(r.code) + '|' + dayKey(r.onsetDateTime || r.recordedDate);
     case 'allergy': return 'alg|' + norm(codeText(r.code));
@@ -380,6 +428,7 @@ function addResource(r, file, loc, patientKey, report) {
       if (e) (r.code.coding = r.code.coding || []).push({ system: LOINC, code: e.code, display: e.display, userSelected: false });
     }
   }
+  normalizeFunc(r);
   const kind = kindOf(r);
   const dkey = MERGE ? dedupeKey(r, kind) : null;
   const fullKey = dkey ? patientKey + '§' + dkey : null;
@@ -667,7 +716,8 @@ const SEC = [
   ['social', ['2.16.840.1.113883.10.20.22.2.17'], ['29762-2']],
   ['notes', ['2.16.840.1.113883.10.20.22.2.65'], []],
   // functional / mental / cognitive status, advance directives, health-status evaluations: patient observations that are not labs
-  ['survey', ['2.16.840.1.113883.10.20.22.2.14', '2.16.840.1.113883.10.20.22.2.56', '2.16.840.1.113883.10.20.22.2.21.1', '2.16.840.1.113883.10.20.22.2.21', '2.16.840.1.113883.10.20.22.2.61', '2.16.840.1.113883.10.20.22.2.57'], ['47420-5', '10190-7', '42348-3', '11383-7', '61144-2']],
+  ['functional', ['2.16.840.1.113883.10.20.22.2.14'], ['47420-5']],
+  ['survey', ['2.16.840.1.113883.10.20.22.2.56', '2.16.840.1.113883.10.20.22.2.21.1', '2.16.840.1.113883.10.20.22.2.21', '2.16.840.1.113883.10.20.22.2.61', '2.16.840.1.113883.10.20.22.2.57'], ['10190-7', '42348-3', '11383-7', '61144-2']],
   // past medical history reads like a problem list
   ['problems', ['2.16.840.1.113883.10.20.22.2.20'], ['11348-0']],
   // plans, goals, family history, assessments, health concerns: keep the text, but never file them as the patient's own results
@@ -801,13 +851,15 @@ function importCDA(text, file, report) {
 
   const obsFrom = (o, cat, fallbackTime) => {
     const st = statusOf(o); if (st === 'nullified' || st === 'obsolete') { skipped.nullified++; return null; }
-    const r = { resourceType: 'Observation', status: CDA_OBS_STATUS[st] || 'final', category: [{ coding: [{ system: OBSCAT, code: cat, display: { laboratory: 'Laboratory', 'vital-signs': 'Vital Signs', 'social-history': 'Social History', exam: 'Exam', survey: 'Survey' }[cat] }] }], code: code(kid(o, 'code')) || { text: 'Observation' } };
+    const r = { resourceType: 'Observation', status: CDA_OBS_STATUS[st] || 'final', category: [{ coding: [{ system: OBSCAT, code: cat === 'functional' ? 'survey' : cat, display: { laboratory: 'Laboratory', 'vital-signs': 'Vital Signs', 'social-history': 'Social History', exam: 'Exam', survey: 'Survey', functional: 'Survey' }[cat] }] }], code: code(kid(o, 'code')) || { text: 'Observation' } };
+    if (cat === 'functional') r.category.push({ coding: [{ system: CS_LOCAL, code: FUNC_CAT, display: 'Functional status' }] });
     const dt = ts(kid(o, 'effectiveTime')) || fallbackTime; if (dt) r.effectiveDateTime = dt;
     const v = kid(o, 'value'); setValue(r, v, o);
     const noCode = !(r.code.coding && r.code.coding.length) && (!r.code.text || r.code.text === 'Observation');
     if (!['valueQuantity', 'valueRange', 'valueRatio', 'valueInteger', 'valueCodeableConcept', 'valueBoolean', 'valueDateTime', 'valueString'].some(k => r[k] != null)) {
       const t = tx(kid(o, 'text')); if (t && t.length < 3000) r.valueString = t;   // value given only as narrative (empty <value>, imaging impressions, ...)
     }
+    if (cat === 'functional' && !['valueQuantity', 'valueRange', 'valueRatio', 'valueInteger', 'valueCodeableConcept', 'valueBoolean', 'valueDateTime', 'valueString'].some(k => r[k] != null)) { skipped.none++; return null; }   // functional status with no finding recorded
     if (noCode && (at(o, 'negationInd') === 'true' || NONE_RE.test(r.valueString || '') || /\bexcluded\b/i.test(r.valueString || ''))) { skipped.none++; return null; }   // negated / "results excluded or not available" placeholder
     if (noCode && !['valueQuantity', 'valueRange', 'valueRatio', 'valueInteger', 'valueCodeableConcept', 'valueBoolean', 'valueDateTime', 'valueString'].some(k => r[k] != null)) { skipped.none++; return null; }   // "results not available" placeholder
     const ics = kids(o, 'interpretationCode').filter(ic => at(ic, 'code')); if (ics.length) r.interpretation = ics.map(ic => flagCode(at(ic, 'code')) || { text: at(ic, 'code') });
@@ -866,8 +918,8 @@ function importCDA(text, file, report) {
 
     const handle = (el, i) => {
       const planned = at(el, 'moodCode') && at(el, 'moodCode') !== 'EVN';          // orders / plans are not results
-      if (type === 'results' || type === 'vitals' || type === 'social' || type === 'survey' || (!type && !planned && (el.localName === 'organizer' || el.localName === 'observation'))) {
-        const cat = type === 'vitals' ? 'vital-signs' : type === 'social' ? 'social-history' : type === 'survey' ? 'survey' : !type ? 'exam' : 'laboratory';
+      if (type === 'results' || type === 'vitals' || type === 'social' || type === 'survey' || type === 'functional' || (!type && !planned && (el.localName === 'organizer' || el.localName === 'observation'))) {
+        const cat = type === 'vitals' ? 'vital-signs' : type === 'social' ? 'social-history' : type === 'survey' ? 'survey' : type === 'functional' ? 'functional' : !type ? 'exam' : 'laboratory';
         const made0 = made;
         if (el.localName === 'organizer') doOrganizer(el, cat, i, null, type === 'results');
         else if (el.localName === 'observation') { const ob = obsFrom(el, cat, null); if (ob) add(ob, i); }
@@ -1037,6 +1089,7 @@ function importCDA(text, file, report) {
 const HEADINGS = [
   ['labs', /^(LABORATORY RESULTS|LABORATORY|LAB RESULTS|LABS|TEST RESULTS|CHEMISTRY ?\/ ?HEMATOLOGY|CHEMISTRY|HEMATOLOGY|LAB(ORATORY)? DATA|RESULTS)$/],
   ['vitals', /^(VITAL SIGNS|VITALS)\b/],
+  ['func', /^(FUNCTIONAL STATUS|FUNCTIONAL ASSESSMENT|PERFORMANCE STATUS|FUNCTIONAL STATUS ASSESSMENT)$/],
   ['notes', /^(PROGRESS NOTES|CLINICAL NOTES|VISIT NOTES|NOTES|CONSULTS?|CONSULT NOTES|DISCHARGE SUMMAR(Y|IES)|ADMISSION NOTES)$/],
   ['radiology', /^(RADIOLOGY|RADIOLOGY REPORTS?|IMAGING|IMAGING REPORTS?|IMAGING RESULTS)$/],
   ['pathology', /^(SURGICAL PATHOLOGY|PATHOLOGY|PATHOLOGY REPORTS?|ANATOMIC PATHOLOGY|CYTOLOGY)$/],
@@ -1065,6 +1118,25 @@ const VITAL_RES = [
   ['bmi', /\bBMI\b[:\s]+(\d{2}(?:\.\d+)?)/i],
   ['pain', /\bPain(?: Score)?\b[:\s]+(\d{1,2})\b/i],
 ];
+/* performance-scale scores in printed text: "ECOG: 1", "ECOG Performance Status 2", "Karnofsky 80%", "KPS: 70", "Lansky 90", "PPS 60%" */
+const FUNC_RES = [
+  ['ecog', /\b(?:ECOG|Zubrod|WHO)(?:\s+performance)?(?:\s+(?:status|score|grade|PS))?\s*(?:[:=\-–]|is|of)?\s*(?:grade\s*)?([0-5])\b(?!\s*[\/.]\s*\d)/i],
+  ['karnofsky', /\b(?:Karnofsky(?:\s+performance)?(?:\s+(?:status|score|scale|index))?|KPS)\s*(?:[:=\-–]|is|of)?\s*(\d{1,3})\s*%?(?![\d.])/i],
+  ['lansky', /\bLansky(?:\s+(?:play[\s-]*performance|performance))?(?:\s+(?:status|score|scale))?\s*(?:[:=\-–]|is|of)?\s*(\d{1,3})\s*%?(?![\d.])/i],
+  ['pps', /\b(?:Palliative Performance(?:\s+(?:Scale|Status|Score))?|PPS)\s*(?:[:=\-–]|is|of)?\s*(\d{1,3})\s*%?(?![\d.])/i],
+];
+function makeFunc(scale, m, date) {
+  const sc = FUNC_SCALES[scale]; const v = +m[1]; if (isNaN(v) || v > sc.max || (sc.step > 1 && v % 5)) return null;
+  const code = { ecog: ['89247-1', 'ECOG Performance Status score'], karnofsky: ['89243-0', 'Karnofsky Performance Status score'] }[scale];
+  const r = { resourceType: 'Observation', status: 'final', category: [{ coding: [{ system: OBSCAT, code: 'survey', display: 'Survey' }] }, { coding: [{ system: CS_LOCAL, code: FUNC_CAT, display: 'Functional status' }] }],
+    code: code ? { coding: [{ system: LOINC, code: code[0], display: code[1] }], text: sc.name } : { text: sc.name }, valueQuantity: { value: v, unit: 'score', system: UCUM, code: '{score}' } };
+  if (date) r.effectiveDateTime = date; return r;
+}
+function funcInLine(t, date, file, L, pKey, report, strict) {   // returns the number of scores found on the line
+  let n = 0;
+  for (const [k, re] of FUNC_RES) { if (strict && !new RegExp('^\\s*' + re.source, 'i').test(t)) continue; const m = t.match(re); if (!m) continue; const r = makeFunc(k, m, date); if (r) { addResource(r, file, L, pKey, report); n++; } }
+  return n;
+}
 function makeVital(kind, m, date) {
   const [code, display] = VITAL[kind];
   const r = { resourceType: 'Observation', status: 'final', category: [{ coding: [{ system: OBSCAT, code: 'vital-signs', display: 'Vital Signs' }] }], code: { coding: [{ system: LOINC, code, display }], text: display } };
@@ -1466,10 +1538,16 @@ function importTextLines(lines, file, report, paged) {
       if (isPanelTitle(t)) { consumed(); endBlock(); pendingPanel = t; continue; }
       pushLeft(i); continue;
     }
+    if (section === 'func') {
+      const d = findDate(t); const date = (d && d.index < 3) ? d.iso : sectionDate;
+      if (funcInLine(t, date, file, loc(i), pKey, report, false)) { consumed(); continue; }
+      pushLeft(i); continue;
+    }
     if (section === 'vitals') {
       if (/^Date\s*\/?\s*Time\b/i.test(t)) { consumed(); continue; }
       const d = findDate(t); const date = (d && d.index < 3) ? d.iso : sectionDate;
       let hit = 0; const L = loc(i);
+      { const fn = funcInLine(t, date, file, L, pKey, report, false); if (fn) { consumed(); hit += fn; } }
       for (const [k, re] of VITAL_RES) { const vm = t.match(re); if (vm) { if (!hit) consumed(); hit++; addResource(makeVital(k, vm, date), file, L, pKey, report); } }
       if (!hit) pushLeft(i);
       continue;
@@ -1479,6 +1557,7 @@ function importTextLines(lines, file, report, paged) {
       if (km && !/^https?$/i.test(km[1])) { const k = km[1].toLowerCase(); if (!kv) kv = { f: {}, keys: {}, idx: [] }; if (kv.f[k] != null) { flushKV(); kv = { f: {}, keys: {}, idx: [] }; } kv.f[k] = km[2]; kv.keys[k] = km[1]; kv.idx.push(i); continue; }
       flushKV(); if (listItem(t, i)) continue; pushLeft(i); continue;
     }
+    if (!section) { const d = findDate(t); if (funcInLine(t, (d && d.index < 3) ? d.iso : sectionDate, file, loc(i), pKey, report, true)) { consumed(); continue; } }   // a line that begins with a scale score outside any section
     pushLeft(i);
   }
   closeDoc(); flushKV(); endBlock(); flushLeft();
@@ -1976,7 +2055,9 @@ function describe(r) {
       const rr = (r.referenceRange || [])[0]; if (rr) { d.low = rr.low ? rr.low.value : ''; d.high = rr.high ? rr.high.value : ''; d.range = rr.text || [d.low, d.high].filter(x => x !== '').join(' - '); }
       const it = (r.interpretation || [])[0]; if (it) { d.flag = ((it.coding || [])[0] || {}).code || it.text; if (d.flag === 'N') d.flag = ''; }
       d.specimen = r.specimen && (r.specimen.display || r.specimen.reference) || ''; d.performer = (r.performer || []).map(p => p.display || p.reference).join('; ');
-      d.comments = (r.note || []).map(n => n.text).join(' / '); d.status = r.status; d.issued = r.issued; d.code = ((r.code.coding || [])[0] || {}); break;
+      d.comments = (r.note || []).map(n => n.text).join(' / '); d.status = r.status; d.issued = r.issued; d.code = ((r.code.coding || [])[0] || {});
+      if (k === 'func') { const fi = funcInfo(r); if (fi) { d.scale = fi.scale; d.score = fi.score; d.meaning = fi.meaning; d.name = FUNC_SCALES[fi.scale].name; } }
+      break;
     }
     case 'Condition': d.name = codeText(r.code); d.date = r.onsetDateTime || r.recordedDate || (r.onsetPeriod || {}).start; d.status = ((r.verificationStatus || {}).coding || [{}])[0].code === 'refuted' ? 'refuted' : ((r.clinicalStatus || {}).coding || [{}])[0].code || ''; d.end = r.abatementDateTime; d.code = ((r.code.coding || [])[0] || {}); break;
     case 'AllergyIntolerance': d.name = codeText(r.code); d.date = r.onsetDateTime || r.recordedDate; d.reaction = (r.reaction || []).flatMap(x => (x.manifestation || []).map(codeText)).join(', '); d.severity = (r.reaction || []).map(x => x.severity).filter(Boolean).join(', ') || r.criticality || ''; d.status = ((r.clinicalStatus || {}).coding || [{}])[0].code || ''; d.category = (r.category || []).join(', '); break;
@@ -2036,5 +2117,5 @@ function addPatient(o) {
   const key = upsertPatient(p, file, { locator: 'entered in the New Patient dialog' });
   return { key, existed: before.has(key) };
 }
-root.CPRSEngine = { prepareClaudeImport, runClaudeImport, isClaudeEligible, deidentify, buildPrompt, restoreTokens, makeBatches, addPatient, LAB_CAT, lookupLab, _pdfToLines: pdfToLines, deps, state, importFile, exportBundle, exportNDJSON, exportCSV, sources, docText, describe, codeText, medName, meta, kindOf, clear, setMerge: b => { MERGE = !!b; }, EXT_SRC, findDate, CS_LOCAL };
+root.CPRSEngine = { funcScales: FUNC_SCALES, funcInfo, prepareClaudeImport, runClaudeImport, isClaudeEligible, deidentify, buildPrompt, restoreTokens, makeBatches, addPatient, LAB_CAT, lookupLab, _pdfToLines: pdfToLines, deps, state, importFile, exportBundle, exportNDJSON, exportCSV, sources, docText, describe, codeText, medName, meta, kindOf, clear, setMerge: b => { MERGE = !!b; }, EXT_SRC, findDate, CS_LOCAL };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

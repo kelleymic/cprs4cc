@@ -171,7 +171,7 @@ function shortFile(f) { return f.length > 28 ? f.slice(0, 25) + '…' : f; }
 function srcLabel(r) { const s = E.sources(r); if (!s.length) return ''; const a = s[0]; return shortFile(a.file) + (a.pages ? ' p.' + a.pages : '') + (s.length > 1 ? ' +' + (s.length - 1) : ''); }
 
 /* ---------------- app state ---------------- */
-const ui = { pt: null, tab: 'cover', labView: 'recent', labIdx: 0, rptView: 'imaging', probView: 'active', sel: {}, graphTest: null, sampleLoaded: false, docFilter: '' };
+const ui = { funcView: null, pt: null, tab: 'cover', labView: 'recent', labIdx: 0, rptView: 'imaging', probView: 'active', sel: {}, graphTest: null, sampleLoaded: false, docFilter: '' };
 const PT = () => E.state.patients.find(p => p.key === ui.pt);
 const filesOf = pt => E.state.files.filter(f => f.report && (f.report.patientKeys ? f.report.patientKeys.includes(pt) : f.report.patientKey === pt));   // a file with several patients is listed under each
 function items(kind) { return E.state.resources.filter(r => { const m = E.meta(r); return m.patientKey === ui.pt && (!kind || (Array.isArray(kind) ? kind.includes(m.kind) : m.kind === kind)); }).map(r => ({ r, d: E.describe(r) })); }
@@ -241,7 +241,7 @@ function detail(r) {
 const MENUS = [
   ['File', [['Select New Patient…', selectPatient], ['Add New Patient…', newPatientDialog], ['Import External Records…', importDialog], ['Load Sample Records…', samplesDialog], '-', ['Export Structured Data (FHIR)…', exportDialog], '-', ['Source Files / Import Log…', sourcesDialog], ['Clear All Imported Data…', clearDialog]]],
   ['Edit', [['Find in Notes…', () => { switchTab('notes'); setTimeout(() => { const s = $('#docq'); if (s) s.focus(); }, 0); }]]],
-  ['View', [['Cover Sheet', () => switchTab('cover')], ['Problem List', () => switchTab('problems')], ['Medications', () => switchTab('meds')], ['Progress Notes', () => switchTab('notes')], ['Consults', () => switchTab('consults')], ['Discharge Summaries', () => switchTab('dcsumm')], ['Laboratory', () => switchTab('labs')], ['Reports', () => switchTab('reports')], ['External Unstructured Data', () => switchTab('ext')]]],
+  ['View', [['Cover Sheet', () => switchTab('cover')], ['Problem List', () => switchTab('problems')], ['Medications', () => switchTab('meds')], ['Progress Notes', () => switchTab('notes')], ['Consults', () => switchTab('consults')], ['Discharge Summaries', () => switchTab('dcsumm')], ['Laboratory', () => switchTab('labs')], ['Functional Status', () => switchTab('func')], ['Reports', () => switchTab('reports')], ['External Unstructured Data', () => switchTab('ext')]]],
   ['Tools', [['Claude Extraction Settings…', () => claudeSettingsDialog()], ['Graph a Lab Test…', () => { ui.labView = 'graph'; switchTab('labs'); }], ['Vital Signs Flowsheet', () => { ui.rptView = 'vitals'; switchTab('reports'); }]]],
   ['Help', [['Data Formats (why FHIR R4)…', helpDialog], ['LOINC Mapping Table…', loincDialog], ['About CPRS4CC…', aboutDialog]]],
 ];
@@ -278,7 +278,7 @@ function renderBanner() {
 }
 
 /* ---------------- tabs ---------------- */
-const TABS = [['cover', 'Cover Sheet'], ['problems', 'Problems'], ['meds', 'Meds'], ['notes', 'Notes'], ['consults', 'Consults'], ['dcsumm', 'D/C Summ'], ['labs', 'Labs'], ['reports', 'Reports'], ['ext', 'Ext Data']];
+const TABS = [['cover', 'Cover Sheet'], ['problems', 'Problems'], ['meds', 'Meds'], ['notes', 'Notes'], ['consults', 'Consults'], ['dcsumm', 'D/C Summ'], ['labs', 'Labs'], ['func', 'Function'], ['reports', 'Reports'], ['ext', 'Ext Data']];
 function renderTabs() { $('#tabs').innerHTML = TABS.map(([k, t]) => '<button role="tab" aria-selected="' + (ui.tab === k) + '" data-tab="' + k + '">' + t + '</button>').join(''); }
 $('#tabs').addEventListener('click', e => { const b = e.target.closest('button[data-tab]'); if (b) switchTab(b.dataset.tab); });
 function switchTab(t) { ui.tab = t; try { localStorage.setItem('cprs4cc.tab', t); } catch (e) { } render(); }
@@ -287,7 +287,7 @@ function render() {
   renderBanner(); renderTabs();
   const pg = $('#page');
   if (!PT()) { pg.innerHTML = '<div class="sunken plain" style="flex:1"><div class="empty">No patient is selected. Use <b>File › Import External Records…</b> to bring in FHIR, C-CDA, HL7 v2, PDF or text records, or <b>File › Load Sample Records…</b>.</div></div>'; return; }
-  const fn = { cover: renderCover, problems: renderProblems, meds: renderMeds, notes: () => renderDocs('notes'), consults: () => renderDocs('consults'), dcsumm: () => renderDocs('dcsumm'), labs: renderLabs, reports: renderReports, ext: renderExt }[ui.tab];
+  const fn = { cover: renderCover, problems: renderProblems, meds: renderMeds, notes: () => renderDocs('notes'), consults: () => renderDocs('consults'), dcsumm: () => renderDocs('dcsumm'), labs: renderLabs, func: renderFunc, reports: renderReports, ext: renderExt }[ui.tab];
   const scroll = {}; pg.querySelectorAll('.box,.pb').forEach((b, i) => scroll[i] = b.scrollTop);
   pg.innerHTML = fn(); bind(pg); while (posts.length) posts.shift()();
   pg.querySelectorAll('.box,.pb').forEach((b, i) => { if (scroll[i]) b.scrollTop = scroll[i]; });
@@ -313,6 +313,7 @@ function renderCover() {
   const imms = items('imm').sort(byDateDesc);
   const labs = items('lab').sort(byDateDesc); const labDates = []; for (const x of labs) { const k = (x.d.date || '').slice(0, 16); if (!labDates.length || labDates[labDates.length - 1].k !== k) labDates.push({ k, r: x.r, d: x.d, n: 1, ab: x.d.flag ? 1 : 0, names: [x.d.name] }); else { const g = labDates[labDates.length - 1]; g.n++; if (x.d.flag) g.ab++; g.names.push(x.d.name); } }
   const vit = latestByName(items('vital'));
+  const fsr = funcSeries(); const fsl = [...fsr.entries()].filter(([k]) => k !== 'other').map(([k, l]) => l[0]);
   const visits = items(['enc', 'appt']).sort(byDateDesc);
   regList('cp', probs); regList('ca', alls); regList('cm', meds); regList('ci', imms); regList('cl', labDates); regList('cv', vit); regList('ce', visits);
   return '<div class="grid3">' +
@@ -324,6 +325,7 @@ function renderCover() {
     panel('Data Sources', (() => { const fs = filesOf(ui.pt); return fs.length ? '<ul class="list">' + fs.map(f => '<li><span>' + esc(shortFile(f.name)) + '</span><span>' + esc(f.format) + '</span></li>').join('') + '</ul>' : '<div class="empty">—</div>'; })()) +
     panel('Recent Lab Results', liList('cl', labDates.slice(0, 40), g => fmtDT(g.d.date) + '  ' + (g.n > 2 ? g.n + ' tests' : g.names.join(', ')), g => g.ab ? g.ab + ' abnormal' : ''), 'double-click to view') +
     panel('Vitals', vit.length ? '<ul class="list">' + vit.map(x => '<li><span>' + esc(vName(x)) + ' ' + graphBtn(x, x.d.value + ' ' + ud(x.d.unit)) + '</span><span>' + esc(fmtDT(x.d.date)) + '</span></li>').join('') + '</ul>' : '<div class="empty">No data found.</div>', 'click a value to graph') +
+    panel('Functional Status', fsl.length ? '<ul class="list">' + fsl.map(x => '<li><span>' + esc(E.funcScales[x.d.scale].short) + ' ' + graphBtn(x, scoreText(x)) + '</span><span>' + esc(fmtDT(x.d.date)) + '</span></li>').join('') + '</ul>' : '<div class="empty">No data found.</div>') +
     panel('Appointments / Visits / Admissions', liList('ce', visits, x => fmtDT(x.d.date) + '  ' + x.d.name, x => x.d.status || ''), visits.length + '') +
     '</div>';
 }
@@ -415,17 +417,52 @@ function renderLabs() {
   }
   return '<div class="split">' + left + '<div class="right">' + right + '</div></div>';
 }
-/* ---------------- trend graph (labs and vitals) ---------------- */
+/* ---------------- functional status (ECOG, Karnofsky, Lansky, PPS, other functional findings) ---------------- */
+function funcSeries() {
+  const rows = items('func'); const by = new Map();
+  for (const x of rows) { const k = x.d.scale || 'other'; (by.get(k) || by.set(k, []).get(k)).push(x); }
+  for (const v of by.values()) v.sort(byDateDesc);
+  return by;
+}
+function scoreText(x) { return x.d.score != null ? (x.d.scale === 'ecog' ? String(x.d.score) : x.d.score + '%') : x.d.value; }
+function trendArrow(list, sc) {                             // latest vs previous score, worded by whether higher is better
+  if (list.length < 2 || list[0].d.score == null || list[1].d.score == null) return '';
+  const diff = list[0].d.score - list[1].d.score; if (!diff) return 'unchanged since ' + fmtDT(list[1].d.date, true);
+  const worse = sc.better === 'lower' ? diff > 0 : diff < 0;
+  return (worse ? '▼ worse' : '▲ better') + ' than ' + fmtDT(list[1].d.date, true) + ' (' + scoreText(list[1]) + ')';
+}
+function renderFunc() {
+  const by = funcSeries(); const order = ['ecog', 'karnofsky', 'lansky', 'pps', 'other'].filter(k => by.has(k));
+  const intro = '<div class="plain">Functional status describes what the patient can do day to day. <b>ECOG</b> (0–5, lower is better) and <b>Karnofsky</b> (0–100%, higher is better) are used for adults; the <b>Lansky play-performance scale</b> (0–100%) is used for children aged 0–16. Scores are listed here and can be graphed over time.</div>';
+  if (!order.length) return '<div class="split"><div class="right" style="flex:1">' + intro + '<div class="box sunken"><div class="empty">No functional status data found. ECOG, Karnofsky, Lansky and PPS scores, and C-CDA Functional Status sections, appear here when they are in the imported records.</div></div></div></div>';
+  if (!ui.funcView || !order.includes(ui.funcView)) ui.funcView = order[0];
+  on('[data-fv]', 'click', e => { ui.funcView = e.currentTarget.dataset.fv; ui.graphState = {}; render(); });
+  const label = k => k === 'other' ? 'Other functional findings' : E.funcScales[k].short;
+  const left = '<div class="left" style="flex-basis:210px"><div class="lbl">Functional Status</div><div class="box sunken"><ul class="list">' + order.map(k => { const l = by.get(k); return '<li tabindex="0" data-fv="' + k + '" class="' + (ui.funcView === k ? 'sel' : '') + '"><span>' + esc(label(k)) + '</span><span>' + (k === 'other' ? l.length : esc(scoreText(l[0]))) + '</span></li>'; }).join('') + '</ul></div></div>';
+  const list = by.get(ui.funcView); let right;
+  if (ui.funcView === 'other') {
+    right = intro + '<div class="lbl">Other functional findings <small>(' + list.length + ')</small></div><div class="box sunken">' + listView('func-other', [{ h: 'Date', fn: x => fmtDT(x.d.date), key: x => sortKey(x.d.date) }, { h: 'Finding', f: 'name', wrap: true }, { h: 'Result', f: 'value', wrap: true }, { h: 'Source', html: x => '<span class="src">' + esc(srcLabel(x.r)) + '</span>' }], list, { empty: 'None.' }) + '</div>';
+  } else {
+    const sc = E.funcScales[ui.funcView]; const key = 'func:' + ui.funcView; const nums = list.filter(x => x.d.score != null && x.d.date);
+    post(() => { const el = $('#ginline'); if (el && nums.length) drawGraph(el, key, ui.graphState = ui.graphState || {}); });
+    const latest = list[0];
+    right = intro + '<div class="panel" style="flex:0 0 auto"><div class="ph"><span>' + esc(sc.name) + '</span><small>' + list.length + ' recorded</small></div><div class="pb sunken"><div style="font-size:1.4em"><b>' + (latest.d.score != null ? graphBtn(latest, scoreText(latest)) : esc(latest.d.value)) + '</b> <small>on ' + esc(fmtDT(latest.d.date, true)) + '</small></div>' +
+      (latest.d.meaning ? '<div>' + esc(latest.d.meaning) + '</div>' : '') + '<div><small>' + esc(trendArrow(list, sc)) + '</small></div></div></div>' +
+      '<div class="box sunken gwrap" id="ginline" style="flex:1 1 auto">' + (nums.length ? '' : '<div class="empty">No numeric scores to graph.</div>') + '</div>';
+  }
+  return '<div class="split">' + left + '<div class="right">' + right + '</div></div>';
+}
+/* ---------------- trend graph (labs, vitals, functional status) ---------------- */
 const LOINC_SYS = 'http://loinc.org';
 // blood vs serum/plasma variants of the same analyte, and alternate vital-sign codes, are graphed together
 const EQUIV = { '2339-0': 'GLU', '2345-7': 'GLU', '6298-4': 'K', '2823-3': 'K', '2947-0': 'NA', '2951-2': 'NA', '2069-3': 'CL', '2075-0': 'CL', '20565-8': 'CO2', '2028-9': 'CO2', '6299-2': 'BUN', '3094-0': 'BUN', '38483-4': 'CREAT', '2160-0': 'CREAT', '49765-1': 'CA', '17861-6': 'CA', '718-7': 'HGB', '20509-6': 'HGB', '8310-5': 'TEMP', '8331-1': 'TEMP', '59408-5': 'SPO2', '2708-6': 'SPO2', '85354-9': 'BP', '55284-4': 'BP', '29463-7': 'WT', '3141-9': 'WT', '8302-2': 'HT', '8306-3': 'HT' };
-function itemKey(r) { const k = E.meta(r).kind === 'vital' ? 'vital' : 'lab'; const c = ((r.code || {}).coding || []).find(c => c.system === LOINC_SYS); return k + ':' + (c ? (EQUIV[c.code] || c.code) : E.codeText(r.code).toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim()); }
+function itemKey(r) { const kd = E.meta(r).kind; if (kd === 'func') { const d = E.describe(r); return 'func:' + (d.scale || E.codeText(r.code).toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim()); } const k = kd === 'vital' ? 'vital' : 'lab'; const c = ((r.code || {}).coding || []).find(c => c.system === LOINC_SYS); return k + ':' + (c ? (EQUIV[c.code] || c.code) : E.codeText(r.code).toUpperCase().replace(/[^A-Z0-9]+/g, ' ').trim()); }
 const UCAN = u => { const s = String(u || '').toLowerCase().replace(/_av\]|_i\]|\[|\]/g, '').replace(/\s+/g, '').trim(); return { kg: 'kg', lb: 'lb', lbs: 'lb', cm: 'cm', in: 'in', 'degf': 'F', '°f': 'F', f: 'F', 'cel': 'C', '°c': 'C', c: 'C', 'degc': 'C', bpm: '/min', '/min': '/min', 'beats/min': '/min', 'breaths/min': '/min', 'mmhg': 'mmhg' }[s] || s; };
 const CONV = { 'kg>lb': v => v * 2.20462, 'lb>kg': v => v / 2.20462, 'cm>in': v => v / 2.54, 'in>cm': v => v * 2.54, 'C>F': v => v * 9 / 5 + 32, 'F>C': v => (v - 32) * 5 / 9 };
 function convert(v, from, to) { const a = UCAN(from), b = UCAN(to); if (a === b || !from || !to) return v; const f = CONV[a + '>' + b]; return f ? f(v) : null; }
 function trendPoints(key) {
   const pts = [];
-  for (const x of items(['lab', 'vital'])) {
+  for (const x of items(['lab', 'vital', 'func'])) {
     if (itemKey(x.r) !== key || !x.d.date) continue; const r = x.r; const t = Date.parse(x.d.date); if (isNaN(t)) continue;
     if (r.component && r.component.length && !r.valueQuantity) {
       for (const c of r.component) { if (!c.valueQuantity) continue; const cc = ((c.code || {}).coding || [])[0] || {}; pts.push({ x, t, v: +c.valueQuantity.value, unit: c.valueQuantity.unit || '', series: cc.code === '8462-4' ? 'Diastolic' : cc.code === '8480-6' ? 'Systolic' : (cc.display || 'Value') }); }
@@ -467,6 +504,7 @@ function drawGraph(el, key, st) {
     const W = 780, H = 320, L = 58, R = 92, T = 16, B = 40;
     const vals = pts.map(p => p.cv).concat(ref ? [ref.low, ref.high].filter(v => v != null) : []);
     let lo = Math.min(...vals), hi = Math.max(...vals); const pad = (hi - lo) * 0.1 || Math.abs(hi) * 0.1 || 1; lo -= pad; hi += pad;
+    const fsc = kind === 'func' ? E.funcScales[key.split(':')[1]] : null; if (fsc) { lo = 0; hi = fsc.max; }   // performance scales are always drawn on their full range
     const t0 = w.from, t1 = Math.max(w.to, w.from + DAY); const span = t1 - t0; const xpad = span * 0.03;
     const X = t => L + (t - (t0 - xpad)) / (span + 2 * xpad) * (W - L - R), Y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
     const step = niceStep((hi - lo) / 5); let g = '';
@@ -494,6 +532,7 @@ function drawGraph(el, key, st) {
   const notes = [];
   notes.push(pts.length + ' of ' + conv.length + ' values shown, ' + fmtDT(isoDay(w.from), true) + ' – ' + fmtDT(isoDay(w.to), true) + '. Latest: ' + (conv.filter(p => p.x === last.x).length > 1 ? last.x.d.value : (last.cmp || '') + +last.cv.toFixed(3)) + ' ' + ud(baseUnit) + ' on ' + fmtDT(last.x.d.date) + '.');
   if (ref) notes.push('Dotted red lines: reference range ' + (ref.low != null ? +(+ref.low).toFixed(3) : '…') + '–' + (ref.high != null ? +(+ref.high).toFixed(3) : '…') + ' ' + ud(baseUnit) + ' as reported with the ' + fmtDT(refP.x.d.date, true) + ' result' + (rangesDiffer ? ' (other results carry different ranges; hover a point to see its own)' : '') + '.');
+  else if (kind === 'func') { const fs = E.funcScales[key.split(':')[1]]; notes.push(fs ? fs.name + ': 0–' + fs.max + ', ' + (fs.better === 'lower' ? 'a LOWER score means better function' : 'a HIGHER score means better function') + '; used for ' + fs.who + '.' : 'Functional status scale.'); }
   else notes.push(kind === 'vital' ? 'No reference range applies to this vital sign.' : 'No reference range was reported for this test in the imported records.');
   if (all.some(p => UCAN(p.unit) !== UCAN(baseUnit))) notes.push('Values recorded in other units were converted to ' + ud(baseUnit) + '.');
   if (dropped) notes.push(dropped + ' value(s) in units that cannot be converted were left out.');

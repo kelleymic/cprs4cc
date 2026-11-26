@@ -33,13 +33,13 @@ test('a problem that is explicitly negated but specific stays as a refuted condi
   const p = H.ofKind('problem'); assert.equal(p.length, 1); assert.equal(p[0].d.status, 'refuted');
 });
 
-test('functional status, goals, plans and family history are not filed as laboratory results', async () => {
+test('functional status goes to the Function section; goals, plans and family history are not filed as laboratory results', async () => {
   const funcObs = `<entry><organizer classCode="CLUSTER" moodCode="EVN"><templateId root="2.16.840.1.113883.10.20.22.4.66"/><code code="d5" displayName="Self-Care"/><statusCode code="completed"/><component><observation classCode="OBS" moodCode="EVN"><code code="54522-8" ${LN} displayName="Functional Status"/><statusCode code="completed"/><effectiveTime value="20050501"/><value xsi:type="CD" code="105504002" displayName="Dependence on Cane" ${SCT}/></observation></component></organizer></entry>`;
   const planObs = `<entry><observation classCode="OBS" moodCode="RQO"><code code="24323-8" ${LN} displayName="Comprehensive metabolic panel"/><statusCode code="active"/></observation></entry>`;
   const famObs = `<entry><organizer classCode="CLUSTER" moodCode="EVN"><component><observation classCode="OBS" moodCode="EVN"><code code="55561003" displayName="Active" ${SCT}/><statusCode code="completed"/><value xsi:type="CD" code="38341003" displayName="Hypertension" ${SCT}/></observation></component></organizer></entry>`;
   await imp(cdaSection('2.16.840.1.113883.10.20.22.2.14', '47420-5', 'FUNCTIONAL STATUS', funcObs) + cdaSection('2.16.840.1.113883.10.20.22.2.10', '18776-5', 'PLAN OF TREATMENT', planObs, '<text>Order: CMP</text>') + cdaSection('2.16.840.1.113883.10.20.22.2.15', '10157-6', 'FAMILY HISTORY', famObs, '<text>Father: hypertension</text>'));
   assert.equal(H.ofKind('lab').length, 0, 'nothing here is a lab');
-  const s = H.ofKind('survey'); assert.equal(s.length, 1); assert.equal(s[0].d.value, 'Dependence on Cane');
+  const s = H.ofKind('func'); assert.equal(s.length, 1); assert.equal(s[0].d.value, 'Dependence on Cane');
   const kept = H.ofKind('unstructured').map(x => Buffer.from(x.r.content[0].attachment.data, 'base64').toString('utf8')).join('\n');
   assert.match(kept, /Father: hypertension/); assert.match(kept, /Order: CMP/);
 });

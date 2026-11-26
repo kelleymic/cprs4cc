@@ -47,6 +47,14 @@
 ## Trend graphs
 - Click a lab or vital value to graph all values of the same item. Periods of 3 months to All, or a custom range; the default ends at the last value. Reference range shown as dotted red lines; unit conversion (kg/lb, cm/in, °C/°F); blood pressure as two series.
 
+## Functional status
+- The **Function** tab lists performance scales and other functional findings and graphs the scores over time. A summary also appears on the Cover Sheet.
+- Scales: ECOG (0-5, lower is better), Karnofsky (0-100%), Lansky play-performance (0-100%, for children 0-16) and the Palliative Performance Scale. Each score shows its standard description.
+- Recognized by LOINC (ECOG 89247-1, Karnofsky 89243-0), the NCI code for Lansky (C38144), the LOINC ECOG answer codes, or the scale name (ECOG, Zubrod, KPS, Lansky, PPS). Scores outside a scale's range (ECOG 7, Karnofsky 77) are not read as scores.
+- Stored as an Observation with a numeric `valueQuantity` (unit `{score}`); the original wording is kept in a note when it differs. Source forms read: FHIR integer / quantity / coded / text values, C-CDA Functional Status sections (and scale scores found in any other section), and printed text such as "ECOG: 1" or "Karnofsky 70%" in a Functional Status or Vital Signs section or at the start of a line.
+- C-CDA functional-status findings that are not scale scores (for example "Dependence on cane", ADL items) are listed under "Other functional findings".
+- Not covered: scores written inside free-text note bodies stay in the note, and the optional Claude extraction path does not yet produce functional-status items.
+
 ## Known limits
 - No OCR: scanned pages are flagged and never sent to Claude.
 - Printed times carry no time zone; the viewer's local zone is assumed.
