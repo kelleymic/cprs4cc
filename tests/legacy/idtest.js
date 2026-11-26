@@ -1,4 +1,4 @@
-process.env.TZ='America/New_York'; require('../src/engine.js'); const E=globalThis.CPRSEngine;
+process.env.TZ='America/New_York'; require('../../src/engine.js'); const E=globalThis.CPRSEngine;
 const cases={
  'labelled single line':'Patient Name: SMITH, JOHN Q    DOB: 03/12/1948    Sex: M\nLABS\nSODIUM  140  mmol/L  136 - 145',
  'labels inline single-spaced':'Name: Jane A. Doe DOB: 1971-05-30 Gender: Female MRN: 0012345\n',

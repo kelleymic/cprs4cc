@@ -7,11 +7,14 @@
   "main": "src/engine.js",
   "scripts": {
     "build": "python3 build.py",
-    "test": "cd tests && node test.js && node catcheck.js && node ingesttest.js && node pathtest.js"
+    "test": "node --test tests/unit/*.test.js"
   },
   "dependencies": {
     "@xmldom/xmldom": "^0.8.10",
     "jszip": "^3.10.1",
     "pdfjs-dist": "^3.11.174"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

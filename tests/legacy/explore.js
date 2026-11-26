@@ -3,10 +3,10 @@ process.env.TZ='America/New_York';
 globalThis.DOMParser=require('@xmldom/xmldom').DOMParser;
 globalThis.pdfjsLib=require('pdfjs-dist/legacy/build/pdf.js');
 globalThis.JSZip=require('jszip');
-require('../src/engine.js');
+require('../../src/engine.js');
 const E=globalThis.CPRSEngine; E.deps.DOMParser=globalThis.DOMParser; E.deps.pdfjs=globalThis.pdfjsLib; E.deps.JSZip=globalThis.JSZip;
 (async()=>{
- const dir='../samples'; const files=process.argv.slice(2).length?process.argv.slice(2):fs.readdirSync(dir);
+ const dir='../../samples'; const files=process.argv.slice(2).length?process.argv.slice(2):fs.readdirSync(dir);
  for(const f of files){ const b=fs.readFileSync(path.join(dir,f)); const ab=b.buffer.slice(b.byteOffset,b.byteOffset+b.length);
    const t0=Date.now(); const reps=await E.importFile(f,ab); for(const r of reps) console.log(f.padEnd(40), (Date.now()-t0)+'ms', r.format, JSON.stringify(r.counts),'merged',r.merged, r.identity?'\n     ID: '+r.identity:'', r.warnings.length?('WARN '+r.warnings.slice(0,3).join(' || ')):''); }
  console.log('patients', E.state.patients.map(p=>p.key));

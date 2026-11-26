@@ -1,6 +1,6 @@
 process.env.TZ='America/New_York';
-globalThis.pdfjsLib=require('pdfjs-dist/legacy/build/pdf.js'); require('../src/engine.js'); const E=globalThis.CPRSEngine; E.deps.pdfjs=pdfjsLib; const fs=require('fs');
-const f='VA_ROI_Printout_HESSEL_2026.pdf'; const b=fs.readFileSync('../samples/'+f); const buf=()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.length);
+globalThis.pdfjsLib=require('pdfjs-dist/legacy/build/pdf.js'); require('../../src/engine.js'); const E=globalThis.CPRSEngine; E.deps.pdfjs=pdfjsLib; const fs=require('fs');
+const f='VA_ROI_Printout_HESSEL_2026.pdf'; const b=fs.readFileSync('../../samples/'+f); const buf=()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.length);
 (async()=>{
  // 1) failure on pages containing "PAGE 2" -> fallback to rules for that page; small batches to force several calls
  let prep=await E.prepareClaudeImport(f,buf(),{mode:'deid'});
